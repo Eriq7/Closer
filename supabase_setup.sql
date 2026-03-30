@@ -6,6 +6,7 @@
 
 create type relationship_label as enum ('active', 'responsive', 'obligatory', 'cut_off');
 create type change_triggered_by as enum ('system', 'manual');
+create type contact_frequency as enum ('often', 'rarely');
 
 -- ─── profiles ────────────────────────────────────────────────────────────────
 -- Extends Supabase auth.users with a display name.
@@ -29,6 +30,8 @@ create table friends (
   user_id    uuid not null references profiles on delete cascade,
   name       text not null,
   label      relationship_label not null default 'responsive',
+  contact_frequency contact_frequency not null default 'rarely',
+  pending_evaluation jsonb,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

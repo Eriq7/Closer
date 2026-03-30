@@ -56,6 +56,8 @@ class _EditInteractionScreenState extends State<EditInteractionScreen> {
         score: _score,
         note: _noteController.text,
         currentLabel: widget.friend.label,
+        contactFrequency: widget.friend.contactFrequency,
+        windowAnchorAt: widget.friend.windowAnchorAt,
       );
 
       if (!mounted) return;

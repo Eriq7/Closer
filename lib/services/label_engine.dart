@@ -3,20 +3,21 @@
 // whether a label change should be triggered.
 //
 // Rules:
-// - Single-event: score -3 → Cut-off; score -2 → downgrade one level
-// - Window: avg interval ≤21 days → use last 5 scores; else last 3
-// - Window total ≤-4 → prompt downgrade to Responsive or Obligatory
-// - Window total ≥+2 (Responsive) → eligible to upgrade to Active
+// - Single-event: score -3 → Cut-off; score -2 → downgrade one level (immediate)
+// - Window size: often → 5, rarely → 3
+// - Minimum interactions: must have at least window-size interactions to trigger window rules
+// - Window total < 0 (label ≠ cut_off) → prompt downgrade
+// - Window total > 0 (label == responsive) → eligible to upgrade to Active
 
 import '../models/interaction.dart';
 import '../utils/constants.dart';
 
 enum LabelTrigger {
   none,
-  immediateCutOff,        // Single -3
-  immediateDowngrade,     // Single -2
-  windowNegativeDowngrade, // Window total ≤ -4
-  windowPositiveUpgrade,  // Responsive window total ≥ +2
+  immediateCutOff,         // Single -3
+  immediateDowngrade,      // Single -2
+  windowNegativeDowngrade, // Window total < 0
+  windowPositiveUpgrade,   // Responsive window total > 0
 }
 
 class LabelEvaluation {
@@ -32,14 +33,16 @@ class LabelEvaluation {
 }
 
 class LabelEngine {
-  /// Evaluates the latest interaction against the full history and returns
-  /// what action (if any) should be triggered.
+  /// Evaluates the latest interaction against the full history.
+  /// [allInteractions] must be sorted newest-first.
+  /// [contactFrequency] determines the window size (often=5, rarely=3).
   static LabelEvaluation evaluate({
     required Interaction latestInteraction,
-    required List<Interaction> allInteractions, // sorted newest-first
+    required List<Interaction> allInteractions,
     required RelationshipLabel currentLabel,
+    required ContactFrequency contactFrequency,
   }) {
-    // Single-event rules first — highest priority.
+    // Single-event rules — highest priority, no minimum interaction count.
     if (latestInteraction.score == -3) {
       return const LabelEvaluation(
         trigger: LabelTrigger.immediateCutOff,
@@ -60,25 +63,38 @@ class LabelEngine {
     }
 
     // Window-based rules.
-    final windowSize = _determineWindowSize(allInteractions);
-    final window = allInteractions.take(windowSize).toList();
-    final total = window.fold<int>(0, (sum, i) => sum + i.score);
+    final windowSize = contactFrequency == ContactFrequency.often
+        ? highFrequencyWindowSize
+        : lowFrequencyWindowSize;
 
-    if (total <= windowNegativeTrigger) {
+    // Not enough interactions yet — do not evaluate.
+    if (allInteractions.length < windowSize) {
       return LabelEvaluation(
-        trigger: LabelTrigger.windowNegativeDowngrade,
-        windowTotal: total,
+        trigger: LabelTrigger.none,
+        windowTotal: allInteractions.fold(0, (s, i) => s + i.score),
         windowSize: windowSize,
       );
     }
 
-    if (currentLabel == RelationshipLabel.responsive &&
-        total >= windowPositiveUpgrade) {
-      return LabelEvaluation(
-        trigger: LabelTrigger.windowPositiveUpgrade,
-        windowTotal: total,
-        windowSize: windowSize,
-      );
+    final window = allInteractions.take(windowSize).toList();
+    final total = window.fold<int>(0, (sum, i) => sum + i.score);
+
+    if (currentLabel != RelationshipLabel.cutOff) {
+      if (total < 0) {
+        return LabelEvaluation(
+          trigger: LabelTrigger.windowNegativeDowngrade,
+          windowTotal: total,
+          windowSize: windowSize,
+        );
+      }
+
+      if (currentLabel == RelationshipLabel.responsive && total > 0) {
+        return LabelEvaluation(
+          trigger: LabelTrigger.windowPositiveUpgrade,
+          windowTotal: total,
+          windowSize: windowSize,
+        );
+      }
     }
 
     return LabelEvaluation(
@@ -86,28 +102,6 @@ class LabelEngine {
       windowTotal: total,
       windowSize: windowSize,
     );
-  }
-
-  /// Determines window size (5 or 3) based on average interval between interactions.
-  static int _determineWindowSize(List<Interaction> interactions) {
-    if (interactions.length < 2) return lowFrequencyWindowSize;
-
-    // Use up to the 6 most recent to calculate average interval.
-    final sample = interactions.take(6).toList();
-    double totalDays = 0;
-    for (int i = 0; i < sample.length - 1; i++) {
-      totalDays += sample[i]
-          .createdAt
-          .difference(sample[i + 1].createdAt)
-          .inDays
-          .abs()
-          .toDouble();
-    }
-    final avgDays = totalDays / (sample.length - 1);
-
-    return avgDays <= highFrequencyThresholdDays
-        ? highFrequencyWindowSize
-        : lowFrequencyWindowSize;
   }
 
   /// Returns the resulting label after a downgrade.

@@ -19,6 +19,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   RelationshipLabel _selectedLabel = RelationshipLabel.responsive;
+  ContactFrequency _selectedFrequency = ContactFrequency.rarely;
   final _friendService = FriendService();
   bool _saving = false;
 
@@ -35,6 +36,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
       await _friendService.addFriend(
         name: _nameController.text.trim(),
         label: _selectedLabel,
+        contactFrequency: _selectedFrequency,
       );
       if (mounted) context.pop(true);
     } catch (e) {
@@ -97,6 +99,28 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                 ),
               ),
               const Spacer(),
+              const Text(
+                'How often do you see them?',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              ...ContactFrequency.values.map(
+                (freq) => RadioListTile<ContactFrequency>(
+                  value: freq,
+                  groupValue: _selectedFrequency,
+                  onChanged: (v) => setState(() => _selectedFrequency = v!),
+                  title: Text(freq.displayName,
+                      style: const TextStyle(fontWeight: FontWeight.w500)),
+                  subtitle: Text(
+                    freq == ContactFrequency.often
+                        ? 'Use last 5 interactions for evaluation'
+                        : 'Use last 3 interactions for evaluation',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const SizedBox(height: 16),
               FilledButton(
                 onPressed: _saving ? null : _save,
                 child: _saving

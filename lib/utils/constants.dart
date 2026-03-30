@@ -1,5 +1,5 @@
 // constants.dart
-// App-wide constants: label definitions, scoring thresholds, and window logic parameters.
+// App-wide constants: label definitions, contact frequency, scoring thresholds, and window logic parameters.
 
 enum RelationshipLabel {
   active,
@@ -73,14 +73,46 @@ const Map<int, String> scoreDescriptions = {
   -3: 'Crossed a line (verbal abuse, violence, serious betrayal)',
 };
 
-// Rolling window: if avg days between interactions <= this, use 5-score window; else use 3.
-const int highFrequencyThresholdDays = 21;
-const int highFrequencyWindowSize = 5;
-const int lowFrequencyWindowSize = 3;
+// Contact frequency — user-defined when adding a friend.
+// Determines the rolling window size for label engine evaluation.
+enum ContactFrequency {
+  often,
+  rarely;
+
+  String get displayName {
+    switch (this) {
+      case often:
+        return 'See often';
+      case rarely:
+        return 'See rarely';
+    }
+  }
+
+  String get dbValue {
+    switch (this) {
+      case often:
+        return 'often';
+      case rarely:
+        return 'rarely';
+    }
+  }
+
+  static ContactFrequency fromDb(String value) {
+    switch (value) {
+      case 'often':
+        return often;
+      default:
+        return rarely;
+    }
+  }
+}
+
+// Rolling window sizes.
+const int highFrequencyWindowSize = 5; // used when contactFrequency == often
+const int lowFrequencyWindowSize = 3;  // used when contactFrequency == rarely
 
 // Window total thresholds that trigger label change prompts.
-const int windowNegativeTrigger = -4; // -4 or lower triggers downgrade prompt
-const int windowPositiveUpgrade = 2;  // Responsive reaching +2 can upgrade to Active
+// Any negative total triggers a downgrade prompt; any positive triggers an upgrade prompt (Responsive only).
 
 // How long without an Active-friend interaction before sending a reminder.
 const int activeReminderDays = 21;

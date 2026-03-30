@@ -35,6 +35,7 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
   List<Interaction> _interactions = [];
   List<LabelChange> _labelChanges = [];
   bool _loading = true;
+  bool _labelHistoryExpanded = false;
 
   @override
   void initState() {
@@ -53,6 +54,22 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
           .getLabelChangesForFriend(widget.friendId);
     } finally {
       if (mounted) setState(() => _loading = false);
+    }
+
+    // Show pending evaluation dialog if one was saved while user was away.
+    if (mounted && _friend?.pendingEvaluation != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted) return;
+        await handleLabelTrigger(
+          context: context,
+          evaluation: _friend!.pendingEvaluation!,
+          friend: _friend!,
+          friendService: _friendService,
+          interactionService: _interactionService,
+        );
+        await _friendService.clearPendingEvaluation(_friend!.id);
+        if (mounted) _load();
+      });
     }
   }
 
@@ -130,6 +147,8 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
       interactionId: interaction.id,
       friendId: widget.friendId,
       currentLabel: _friend!.label,
+      contactFrequency: _friend!.contactFrequency,
+      windowAnchorAt: _friend!.windowAnchorAt,
     );
 
     if (!mounted) return;
@@ -144,6 +163,17 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
       );
     }
 
+    _load();
+  }
+
+  Future<void> _changeFrequency() async {
+    if (_friend == null) return;
+    final chosen = await showDialog<ContactFrequency>(
+      context: context,
+      builder: (_) => _FrequencySelectDialog(current: _friend!.contactFrequency),
+    );
+    if (chosen == null || !mounted) return;
+    await _friendService.updateContactFrequency(_friend!.id, chosen);
     _load();
   }
 
@@ -176,6 +206,65 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
     }
   }
 
+  Future<void> _deleteLabelChange(LabelChange change) async {
+    final isLatest = _labelChanges.isNotEmpty && _labelChanges.first.id == change.id;
+
+    if (isLatest) {
+      // Warn user that label will revert to previous value.
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Delete this label change?'),
+          content: Text(
+            'This will revert the label from "${change.toLabel.displayName}" back to "${change.fromLabel.displayName}".',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete & Revert'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+
+      await _interactionService.deleteLabelChange(change.id);
+      await _friendService.updateLabel(
+        friendId: widget.friendId,
+        newLabel: change.fromLabel,
+      );
+    } else {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text('Delete this history entry?'),
+          content: const Text('This cannot be undone.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Delete'),
+            ),
+          ],
+        ),
+      );
+      if (confirmed != true || !mounted) return;
+
+      await _interactionService.deleteLabelChange(change.id);
+    }
+
+    _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) {
@@ -204,12 +293,17 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
           PopupMenuButton<String>(
             onSelected: (v) {
               if (v == 'change_label') _manualLabelChange();
+              if (v == 'change_frequency') _changeFrequency();
               if (v == 'delete') _deleteFriend();
             },
             itemBuilder: (_) => [
               const PopupMenuItem(
                 value: 'change_label',
                 child: Text('Change label manually'),
+              ),
+              const PopupMenuItem(
+                value: 'change_frequency',
+                child: Text('Change contact frequency'),
               ),
               const PopupMenuItem(
                 value: 'delete',
@@ -276,7 +370,21 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
               const Text('Label History',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               const SizedBox(height: 8),
-              ..._labelChanges.map((c) => _LabelChangeTile(change: c)),
+              ...(_labelHistoryExpanded
+                      ? _labelChanges
+                      : _labelChanges.take(3).toList())
+                  .map((c) => _LabelChangeTile(
+                        change: c,
+                        onDelete: () => _deleteLabelChange(c),
+                      )),
+              if (_labelChanges.length > 3)
+                TextButton(
+                  onPressed: () => setState(
+                      () => _labelHistoryExpanded = !_labelHistoryExpanded),
+                  child: Text(_labelHistoryExpanded
+                      ? 'Show less'
+                      : 'Show ${_labelChanges.length - 3} more'),
+                ),
             ],
 
             const SizedBox(height: 80), // fab clearance
@@ -386,7 +494,8 @@ class _InteractionTile extends StatelessWidget {
 
 class _LabelChangeTile extends StatelessWidget {
   final LabelChange change;
-  const _LabelChangeTile({required this.change});
+  final VoidCallback onDelete;
+  const _LabelChangeTile({required this.change, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -417,6 +526,18 @@ class _LabelChangeTile extends StatelessWidget {
                       ? 'Manual'
                       : 'System',
                   style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+                PopupMenuButton<String>(
+                  iconSize: 18,
+                  onSelected: (v) {
+                    if (v == 'delete') onDelete();
+                  },
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Text('Delete', style: TextStyle(color: Colors.red)),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -490,6 +611,61 @@ class _LabelSelectDialogState extends State<_LabelSelectDialog> {
         FilledButton(
           onPressed: () => Navigator.of(context).pop(_selected),
           child: const Text('Next'),
+        ),
+      ],
+    );
+  }
+}
+
+class _FrequencySelectDialog extends StatefulWidget {
+  final ContactFrequency current;
+  const _FrequencySelectDialog({required this.current});
+
+  @override
+  State<_FrequencySelectDialog> createState() => _FrequencySelectDialogState();
+}
+
+class _FrequencySelectDialogState extends State<_FrequencySelectDialog> {
+  late ContactFrequency _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = widget.current;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Contact Frequency'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: ContactFrequency.values
+            .map(
+              (freq) => RadioListTile<ContactFrequency>(
+                value: freq,
+                groupValue: _selected,
+                onChanged: (v) => setState(() => _selected = v!),
+                title: Text(freq.displayName),
+                subtitle: Text(
+                  freq == ContactFrequency.often
+                      ? 'Evaluate after 5 interactions'
+                      : 'Evaluate after 3 interactions',
+                  style: const TextStyle(fontSize: 12),
+                ),
+                contentPadding: EdgeInsets.zero,
+              ),
+            )
+            .toList(),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(null),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(_selected),
+          child: const Text('Save'),
         ),
       ],
     );

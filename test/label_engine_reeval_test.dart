@@ -39,35 +39,40 @@ void main() {
         latestInteraction: before.first,
         allInteractions: before,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(evalBefore.trigger, LabelTrigger.immediateCutOff);
 
       // After edit: -3 replaced by +1 → newest is +1
+      // rarely, 3 items = windowSize, total = 1+1+1 = 3 > 0, active (not responsive) → none
       final after = _buildHistory([1, 1, 1]);
       final evalAfter = LabelEngine.evaluate(
         latestInteraction: after.first,
         allInteractions: after,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(evalAfter.trigger, LabelTrigger.none);
     });
 
-    test('Edit makes window total drop to -4: triggers windowNegativeDowngrade', () {
-      // History: [+1, -1, -1, -1, +1] total = -1 → none
-      final before = _buildHistory([1, -1, -1, -1, 1]);
+    test('Edit makes window total go negative: triggers windowNegativeDowngrade', () {
+      // Before edit: often, [1, 1, 1, -1, 1], total = 1+1+1-1+1 = 3 > 0, active → none
+      final before = _buildHistory([1, 1, 1, -1, 1]);
       final evalBefore = LabelEngine.evaluate(
         latestInteraction: before.first,
         allInteractions: before,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.often,
       );
       expect(evalBefore.trigger, LabelTrigger.none);
 
-      // After edit: newest score changed from +1 to -3, total window = -5
-      final after = _buildHistory([-3, -1, -1, -1, 1]);
+      // After edit: newest score changed from +1 to -3 → immediateCutOff
+      final after = _buildHistory([-3, 1, 1, -1, 1]);
       final evalAfter = LabelEngine.evaluate(
         latestInteraction: after.first,
         allInteractions: after,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.often,
       );
       expect(evalAfter.trigger, LabelTrigger.immediateCutOff);
     });
@@ -78,14 +83,17 @@ void main() {
         latestInteraction: before.first,
         allInteractions: before,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(evalBefore.trigger, LabelTrigger.immediateDowngrade);
 
+      // rarely, 3 items, total = 0+1+1 = 2 > 0, active (not responsive) → none
       final after = _buildHistory([0, 1, 1]);
       final evalAfter = LabelEngine.evaluate(
         latestInteraction: after.first,
         allInteractions: after,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(evalAfter.trigger, LabelTrigger.none);
     });
@@ -94,31 +102,35 @@ void main() {
   group('Re-evaluation after delete', () {
     test('Delete the only -3: no more cutOff trigger', () {
       // After deletion of -3, remaining history: [+1, +1]
+      // rarely, 2 items < 3 → none
       final history = _buildHistory([1, 1]);
       final eval = LabelEngine.evaluate(
         latestInteraction: history.first,
         allInteractions: history,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(eval.trigger, LabelTrigger.none);
     });
 
     test('Delete a positive score from Responsive: upgrade may no longer apply', () {
-      // Before delete: Responsive with window total ≥ +2 → upgrade eligible
+      // Before delete: Responsive, rarely, [1, 1, 1] → total 3 > 0 → upgrade eligible
       final before = _buildHistory([1, 1, 1]);
       final evalBefore = LabelEngine.evaluate(
         latestInteraction: before.first,
         allInteractions: before,
         currentLabel: RelationshipLabel.responsive,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(evalBefore.trigger, LabelTrigger.windowPositiveUpgrade);
 
-      // After delete of one +1: only [-1, -1] remain, total = -2 → none
+      // After delete of one +1: only [-1, -1] remain (2 items < windowSize 3) → none
       final after = _buildHistory([-1, -1]);
       final evalAfter = LabelEngine.evaluate(
         latestInteraction: after.first,
         allInteractions: after,
         currentLabel: RelationshipLabel.responsive,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(evalAfter.trigger, LabelTrigger.none);
     });

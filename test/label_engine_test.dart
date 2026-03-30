@@ -39,6 +39,7 @@ void main() {
           latestInteraction: latest,
           allInteractions: [latest],
           currentLabel: label,
+          contactFrequency: ContactFrequency.rarely,
         );
         expect(result.trigger, LabelTrigger.immediateCutOff,
             reason: 'label=$label');
@@ -51,6 +52,7 @@ void main() {
         latestInteraction: latest,
         allInteractions: [latest],
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(result.trigger, LabelTrigger.immediateDowngrade);
     });
@@ -61,6 +63,7 @@ void main() {
         latestInteraction: latest,
         allInteractions: [latest],
         currentLabel: RelationshipLabel.responsive,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(result.trigger, LabelTrigger.immediateDowngrade);
     });
@@ -71,6 +74,7 @@ void main() {
         latestInteraction: latest,
         allInteractions: [latest],
         currentLabel: RelationshipLabel.obligatory,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(result.trigger, isNot(LabelTrigger.immediateDowngrade));
     });
@@ -81,48 +85,54 @@ void main() {
         latestInteraction: latest,
         allInteractions: [latest],
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(result.trigger, LabelTrigger.none);
     });
   });
 
   group('Window size determination', () {
-    test('avg interval 7 days → window size 5 (high frequency)', () {
-      final history = _buildHistory([1, 1, 1, 1, 1, 1], daysBetween: 7);
+    test('ContactFrequency.often → windowSize 5', () {
+      final history = _buildHistory([1, 1, 1, 1, 1]);
       final latest = history.first;
       final result = LabelEngine.evaluate(
         latestInteraction: latest,
         allInteractions: history,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.often,
       );
       expect(result.windowSize, 5);
     });
 
-    test('avg interval 22 days → window size 3 (low frequency)', () {
-      final history = _buildHistory([1, 1, 1, 1], daysBetween: 22);
+    test('ContactFrequency.rarely → windowSize 3', () {
+      final history = _buildHistory([1, 1, 1]);
       final latest = history.first;
       final result = LabelEngine.evaluate(
         latestInteraction: latest,
         allInteractions: history,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(result.windowSize, 3);
     });
 
-    test('fewer than 2 interactions → defaults to window size 3', () {
-      final latest = _fakeInteraction(score: 1, createdAt: DateTime.now());
+    test('fewer interactions than window size → trigger is none', () {
+      // rarely uses windowSize 3; only 2 interactions → too few to evaluate
+      final history = _buildHistory([1, 1]);
+      final latest = history.first;
       final result = LabelEngine.evaluate(
         latestInteraction: latest,
-        allInteractions: [latest],
+        allInteractions: history,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.rarely,
       );
-      expect(result.windowSize, 3);
+      expect(result.trigger, LabelTrigger.none);
     });
   });
 
   group('Window total rules', () {
     test('Responsive with window total +2 → windowPositiveUpgrade', () {
-      // High frequency (7 days) → 5 score window
+      // often → 5 score window
       final history = _buildHistory([2, 1, 1, -1, -1], daysBetween: 7);
       // total of first 5: 2+1+1-1-1 = 2
       final latest = history.first;
@@ -130,33 +140,35 @@ void main() {
         latestInteraction: latest,
         allInteractions: history,
         currentLabel: RelationshipLabel.responsive,
+        contactFrequency: ContactFrequency.often,
       );
       expect(result.trigger, LabelTrigger.windowPositiveUpgrade);
     });
 
     test('window total -4 → windowNegativeDowngrade', () {
-      // Low frequency (30 days) → 3 score window
+      // rarely → 3 score window
       // Latest score is -1 (not -2) to avoid triggering the single-event rule.
       // Window of 3: -1 + -2 + -1 = -4
       final history = _buildHistory([-1, -2, -1, 1, 1], daysBetween: 30);
-      // total of first 3: -1-2-1 = -4
       final latest = history.first;
       final result = LabelEngine.evaluate(
         latestInteraction: latest,
         allInteractions: history,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(result.trigger, LabelTrigger.windowNegativeDowngrade);
     });
 
-    test('window total -3 → no trigger', () {
-      final history = _buildHistory([-1, -1, -1, 1, 1], daysBetween: 30);
-      // first 3: -1-1-1 = -3
+    test('window total 0 → none', () {
+      // rarely → 3 score window; total = 0+0+0 = 0, no trigger
+      final history = _buildHistory([0, 0, 0], daysBetween: 30);
       final latest = history.first;
       final result = LabelEngine.evaluate(
         latestInteraction: latest,
         allInteractions: history,
         currentLabel: RelationshipLabel.active,
+        contactFrequency: ContactFrequency.rarely,
       );
       expect(result.trigger, LabelTrigger.none);
     });

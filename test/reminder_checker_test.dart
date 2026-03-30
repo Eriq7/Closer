@@ -13,6 +13,7 @@ Friend _fakeFriend(String id, RelationshipLabel label) {
     userId: 'user-1',
     name: 'Test $id',
     label: label,
+    contactFrequency: ContactFrequency.rarely,
     createdAt: DateTime(2026, 1, 1),
     updatedAt: DateTime(2026, 1, 1),
   );

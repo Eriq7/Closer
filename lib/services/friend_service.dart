@@ -19,12 +19,14 @@ class FriendService {
   Future<Friend> addFriend({
     required String name,
     required RelationshipLabel label,
+    required ContactFrequency contactFrequency,
   }) async {
     final userId = _client.auth.currentUser!.id;
     final data = await _client.from('friends').insert({
       'user_id': userId,
       'name': name,
       'label': label.dbValue,
+      'contact_frequency': contactFrequency.dbValue,
     }).select().single();
     return Friend.fromMap(data);
   }
@@ -38,6 +40,7 @@ class FriendService {
         .update({
           'label': newLabel.dbValue,
           'updated_at': DateTime.now().toIso8601String(),
+          'window_anchor_at': DateTime.now().toUtc().toIso8601String(),
         })
         .eq('id', friendId)
         .select()
@@ -47,5 +50,19 @@ class FriendService {
 
   Future<void> deleteFriend(String friendId) async {
     await _client.from('friends').delete().eq('id', friendId);
+  }
+
+  Future<void> updateContactFrequency(
+      String friendId, ContactFrequency frequency) async {
+    await _client.from('friends').update({
+      'contact_frequency': frequency.dbValue,
+    }).eq('id', friendId);
+  }
+
+  Future<void> clearPendingEvaluation(String friendId) async {
+    await _client.from('friends').update({
+      'pending_evaluation': null,
+      'window_anchor_at': DateTime.now().toUtc().toIso8601String(),
+    }).eq('id', friendId);
   }
 }
