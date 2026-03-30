@@ -160,8 +160,8 @@ void main() {
       expect(result.trigger, LabelTrigger.windowNegativeDowngrade);
     });
 
-    test('window total 0 → none', () {
-      // rarely → 3 score window; total = 0+0+0 = 0, no trigger
+    test('window total 0 → windowNoChange (window complete, no label change)', () {
+      // rarely → 3 score window; total = 0+0+0 = 0, no trigger but window complete
       final history = _buildHistory([0, 0, 0], daysBetween: 30);
       final latest = history.first;
       final result = LabelEngine.evaluate(
@@ -170,7 +170,7 @@ void main() {
         currentLabel: RelationshipLabel.active,
         contactFrequency: ContactFrequency.rarely,
       );
-      expect(result.trigger, LabelTrigger.none);
+      expect(result.trigger, LabelTrigger.windowNoChange);
     });
   });
 

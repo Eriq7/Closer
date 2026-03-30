@@ -67,7 +67,7 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
           friendService: _friendService,
           interactionService: _interactionService,
         );
-        await _friendService.clearPendingEvaluation(_friend!.id);
+        // clearPendingEvaluation is handled inside handleLabelTrigger.
         if (mounted) _load();
       });
     }

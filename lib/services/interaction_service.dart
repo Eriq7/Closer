@@ -138,12 +138,14 @@ class InteractionService {
   Future<LabelEvaluation> _handleEvaluation(
       String friendId, LabelEvaluation evaluation) async {
     if (evaluation.trigger == LabelTrigger.windowNegativeDowngrade ||
-        evaluation.trigger == LabelTrigger.windowPositiveUpgrade) {
+        evaluation.trigger == LabelTrigger.windowPositiveUpgrade ||
+        evaluation.trigger == LabelTrigger.windowNoChange) {
       await _client.from('friends').update({
         'pending_evaluation': {
           'trigger': evaluation.trigger.name,
           'windowTotal': evaluation.windowTotal,
           'windowSize': evaluation.windowSize,
+          'anchorTimestamp': evaluation.anchorTimestamp?.toIso8601String(),
         },
       }).eq('id', friendId);
       return const LabelEvaluation(

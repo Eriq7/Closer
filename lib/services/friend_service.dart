@@ -34,13 +34,16 @@ class FriendService {
   Future<Friend> updateLabel({
     required String friendId,
     required RelationshipLabel newLabel,
+    DateTime? anchorTimestamp,
   }) async {
     final data = await _client
         .from('friends')
         .update({
           'label': newLabel.dbValue,
           'updated_at': DateTime.now().toIso8601String(),
-          'window_anchor_at': DateTime.now().toUtc().toIso8601String(),
+          'window_anchor_at':
+              (anchorTimestamp ?? DateTime.now()).toUtc().toIso8601String(),
+          'pending_evaluation': null,
         })
         .eq('id', friendId)
         .select()
@@ -59,10 +62,12 @@ class FriendService {
     }).eq('id', friendId);
   }
 
-  Future<void> clearPendingEvaluation(String friendId) async {
+  Future<void> clearPendingEvaluation(String friendId,
+      {DateTime? anchorTimestamp}) async {
     await _client.from('friends').update({
       'pending_evaluation': null,
-      'window_anchor_at': DateTime.now().toUtc().toIso8601String(),
+      'window_anchor_at':
+          (anchorTimestamp ?? DateTime.now()).toUtc().toIso8601String(),
     }).eq('id', friendId);
   }
 }

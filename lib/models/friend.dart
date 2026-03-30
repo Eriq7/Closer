@@ -55,6 +55,9 @@ class Friend {
       ),
       windowTotal: json['windowTotal'] as int,
       windowSize: json['windowSize'] as int,
+      anchorTimestamp: json['anchorTimestamp'] != null
+          ? DateTime.parse(json['anchorTimestamp'] as String)
+          : null,
     );
   }
 

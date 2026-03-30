@@ -4,6 +4,9 @@
 - **Macro Plan**: At project start, define 3-5 high-level phases in `PLAN.md`.
 - **Micro Detail**: Only provide detailed, step-by-step tasks for the **CURRENT** phase. Do not over-engineer future phases.
 - **Phase Transition**: When a phase ends, update `PLAN.md` with ✅ and then detail the next phase by **expanding its tasks in-place** within `PLAN.md`, replacing the previous high-level description. `PLAN.md` is the single source of truth for all planning.
+- **Dynamic Scope**: 
+    - **Bug Fixes/Refactor**: Skip `PLAN.md` updates.
+    - **New Features**: Append to `PLAN.md` chronologically before implementation with descrition
 
 ## 2. Checkpoint & Manual Verification (Crucial)
 - **Manual Checklist**: Before starting any phase, generate a specific **Manual Verification Checklist** for the user (瑞).

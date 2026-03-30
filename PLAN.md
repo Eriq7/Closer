@@ -68,7 +68,7 @@ Relationship quantification management app for overseas Chinese users.
 **Goal**: Full experience with visual relationship map, history timeline, and push notifications.
 
 - [x] Step 7: Relationship visualization (concentric-circle map, tap to navigate)
-- [x] Step 8: Per-friend relationship timeline (merged interactions + label changes)
+- [x] Step 8: Per-friend relationship timeline (merged interactions + label changes, enriched with stats header / score sparkline / label-period chapter grouping)
 - [x] Step 9: Push notifications (ReminderChecker + flutter_local_notifications, mobile only)
 
 ## 🔍 CHECKPOINT — Phase 2
@@ -84,3 +84,5 @@ Relationship quantification management app for overseas Chinese users.
 | 2026-03-29 | Supabase tables created, app tested end-to-end in browser | ✅ |
 | 2026-03-29 | Phase 1 complete (incl. interaction edit/delete, 20/20 unit tests) | ✅ |
 | 2026-03-29 | Phase 2 complete (29/29 unit tests) | ✅ |
+| 2026-03-30 | Timeline screen enriched: stats header + score sparkline + label-period chapter grouping | ✅ |
+| 2026-03-30 | Bug fix: label evaluation same-label no-op (Responsive→Responsive); window anchor timestamp corrected to triggering interaction's createdAt | ✅ |

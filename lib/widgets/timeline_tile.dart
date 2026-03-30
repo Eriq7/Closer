@@ -3,6 +3,7 @@
 // Draws a vertical connector line on the left and a colored dot.
 // InteractionTimelineEvent: green/grey/red dot with score + note.
 // LabelChangeTimelineEvent: indigo dot with from → to label transition.
+// PeriodDividerTile: full-width chapter header (rendered separately, not via TimelineTile).
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -79,6 +80,7 @@ class TimelineTile extends StatelessWidget {
               child: switch (event) {
                 InteractionTimelineEvent e => _InteractionContent(event: e),
                 LabelChangeTimelineEvent e => _LabelChangeContent(event: e),
+                PeriodDividerTimelineEvent _ => const SizedBox.shrink(), // never rendered here
               },
             ),
           ),
@@ -95,6 +97,7 @@ class TimelineTile extends StatelessWidget {
               ? const Color(0xFFC62828)
               : Colors.grey,
       LabelChangeTimelineEvent _ => Colors.indigo,
+      PeriodDividerTimelineEvent _ => Colors.transparent, // never rendered via TimelineTile
     };
   }
 }
@@ -207,6 +210,76 @@ class _LabelChangeContent extends StatelessWidget {
           style: const TextStyle(fontSize: 11, color: Colors.grey),
         ),
       ],
+    );
+  }
+}
+
+/// Full-width chapter divider shown between label-change periods.
+/// Displays the label name as a styled chip with date range and interaction stats.
+class PeriodDividerTile extends StatelessWidget {
+  final PeriodDividerTimelineEvent event;
+
+  const PeriodDividerTile({super.key, required this.event});
+
+  @override
+  Widget build(BuildContext context) {
+    final fmt = DateFormat('MMM yyyy');
+    final startStr =
+        event.start == null ? 'Beginning' : fmt.format(event.start!.toLocal());
+    final endStr =
+        event.end == null ? 'Ongoing' : fmt.format(event.end!.toLocal());
+    final dateRange = '$startStr – $endStr';
+
+    final avg = event.averageScore;
+    final avgText = avg >= 0
+        ? '+${avg.toStringAsFixed(1)}'
+        : avg.toStringAsFixed(1);
+    final avgColor = avg > 0
+        ? const Color(0xFF2E7D32)
+        : avg < 0
+            ? const Color(0xFFC62828)
+            : Colors.grey;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: Divider(color: Colors.grey.shade300)),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: LabelBadge(label: event.label),
+              ),
+              Expanded(child: Divider(color: Colors.grey.shade300)),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            dateRange,
+            style: const TextStyle(fontSize: 11, color: Colors.grey),
+          ),
+          if (event.interactionCount > 0) ...[
+            const SizedBox(height: 2),
+            RichText(
+              text: TextSpan(
+                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                children: [
+                  TextSpan(
+                    text:
+                        '${event.interactionCount} interaction${event.interactionCount == 1 ? '' : 's'} · avg ',
+                  ),
+                  TextSpan(
+                    text: avgText,
+                    style: TextStyle(
+                        color: avgColor, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

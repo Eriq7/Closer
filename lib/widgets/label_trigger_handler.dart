@@ -3,6 +3,12 @@
 // Used by AddInteractionScreen, EditInteractionScreen, and the delete flow
 // in FriendDetailScreen. Shows the label suggestion dialog and applies
 // any accepted label change.
+//
+// Key rules:
+// - Options are filtered to exclude the friend's current label (no no-op changes).
+// - If no valid options remain (same-label case), shows a simple informational
+//   dialog and resets the window anchor — does NOT write to label_changes.
+// - clearPendingEvaluation is called internally; callers do NOT need to call it.
 
 import 'package:flutter/material.dart';
 import '../models/friend.dart';
@@ -15,6 +21,9 @@ import '../utils/constants.dart';
 /// Shows the label suggestion dialog for [evaluation] and, if the user accepts,
 /// updates the friend's label and records a system-triggered label change.
 ///
+/// Handles window anchor reset internally — caller does NOT need to call
+/// clearPendingEvaluation after this function returns.
+///
 /// [friend] is used for its current label (for applyDowngrade) and id.
 /// Does NOT call setState or pop — caller is responsible for refreshing UI.
 Future<void> handleLabelTrigger({
@@ -25,6 +34,32 @@ Future<void> handleLabelTrigger({
   required InteractionService interactionService,
 }) async {
   if (evaluation.trigger == LabelTrigger.none) return;
+
+  // Window completed with no label change warranted — show informational dialog only.
+  if (evaluation.trigger == LabelTrigger.windowNoChange) {
+    if (!context.mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Relationship Check'),
+        content: Text(
+          'Based on the last ${evaluation.windowSize} interactions, '
+          '${friend.name} is still ${friend.label.displayName}.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+    await friendService.clearPendingEvaluation(
+      friend.id,
+      anchorTimestamp: evaluation.anchorTimestamp,
+    );
+    return;
+  }
 
   String message;
   List<RelationshipLabel> options;
@@ -45,17 +80,24 @@ Future<void> handleLabelTrigger({
       message = 'The last ${evaluation.windowSize} interactions total '
           '${evaluation.windowTotal} points. '
           'This pattern suggests re-evaluating this relationship.';
-      options = [RelationshipLabel.responsive, RelationshipLabel.obligatory];
+      // Only offer labels that are actually different from the current one.
+      options = [RelationshipLabel.responsive, RelationshipLabel.obligatory]
+          .where((l) => l != friend.label)
+          .toList();
       break;
     case LabelTrigger.windowPositiveUpgrade:
       message = 'The last ${evaluation.windowSize} interactions total '
           '+${evaluation.windowTotal} points. '
           '${friend.label.displayName} friends with sustained positive scores '
           'can be upgraded to Active.';
-      options = [RelationshipLabel.active];
+      options = [RelationshipLabel.active]
+          .where((l) => l != friend.label)
+          .toList();
       break;
     case LabelTrigger.none:
       return;
+    case LabelTrigger.windowNoChange:
+      return; // handled above before the switch
   }
 
   if (!context.mounted) return;
@@ -72,12 +114,24 @@ Future<void> handleLabelTrigger({
   );
 
   if (chosen != null && context.mounted) {
-    await friendService.updateLabel(friendId: friend.id, newLabel: chosen);
+    // Label changed: updateLabel clears pending_evaluation and sets anchor.
+    await friendService.updateLabel(
+      friendId: friend.id,
+      newLabel: chosen,
+      anchorTimestamp: evaluation.anchorTimestamp,
+    );
     await interactionService.saveLabelChange(
       friendId: friend.id,
       fromLabel: friend.label,
       toLabel: chosen,
       triggeredBy: ChangeTriggeredBy.system,
+    );
+  } else {
+    // User kept current label — still reset the window anchor so the next
+    // evaluation window starts fresh from the triggering interaction.
+    await friendService.clearPendingEvaluation(
+      friend.id,
+      anchorTimestamp: evaluation.anchorTimestamp,
     );
   }
 }

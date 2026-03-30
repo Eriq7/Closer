@@ -16,19 +16,25 @@ enum LabelTrigger {
   none,
   immediateCutOff,         // Single -3
   immediateDowngrade,      // Single -2
-  windowNegativeDowngrade, // Window total < 0
-  windowPositiveUpgrade,   // Responsive window total > 0
+  windowNegativeDowngrade, // Active window total < 0 → offer downgrade
+  windowPositiveUpgrade,   // Responsive window total > 0 → offer upgrade
+  windowNoChange,          // Window complete, no label change warranted → inform user
 }
 
 class LabelEvaluation {
   final LabelTrigger trigger;
   final int windowTotal;
   final int windowSize;
+  /// The createdAt of the interaction that triggered this evaluation.
+  /// Used to set window_anchor_at so the next window starts from the interaction
+  /// immediately after the one that triggered the evaluation.
+  final DateTime? anchorTimestamp;
 
   const LabelEvaluation({
     required this.trigger,
     required this.windowTotal,
     required this.windowSize,
+    this.anchorTimestamp,
   });
 }
 
@@ -44,20 +50,22 @@ class LabelEngine {
   }) {
     // Single-event rules — highest priority, no minimum interaction count.
     if (latestInteraction.score == -3) {
-      return const LabelEvaluation(
+      return LabelEvaluation(
         trigger: LabelTrigger.immediateCutOff,
         windowTotal: -3,
         windowSize: 1,
+        anchorTimestamp: latestInteraction.createdAt,
       );
     }
 
     if (latestInteraction.score == -2) {
       if (currentLabel == RelationshipLabel.active ||
           currentLabel == RelationshipLabel.responsive) {
-        return const LabelEvaluation(
+        return LabelEvaluation(
           trigger: LabelTrigger.immediateDowngrade,
           windowTotal: -2,
           windowSize: 1,
+          anchorTimestamp: latestInteraction.createdAt,
         );
       }
     }
@@ -80,11 +88,13 @@ class LabelEngine {
     final total = window.fold<int>(0, (sum, i) => sum + i.score);
 
     if (currentLabel != RelationshipLabel.cutOff) {
-      if (total < 0) {
+      // Only Active friends are offered a downgrade via window evaluation.
+      if (currentLabel == RelationshipLabel.active && total < 0) {
         return LabelEvaluation(
           trigger: LabelTrigger.windowNegativeDowngrade,
           windowTotal: total,
           windowSize: windowSize,
+          anchorTimestamp: latestInteraction.createdAt,
         );
       }
 
@@ -93,8 +103,17 @@ class LabelEngine {
           trigger: LabelTrigger.windowPositiveUpgrade,
           windowTotal: total,
           windowSize: windowSize,
+          anchorTimestamp: latestInteraction.createdAt,
         );
       }
+
+      // Window complete but no label change warranted — inform user and reset anchor.
+      return LabelEvaluation(
+        trigger: LabelTrigger.windowNoChange,
+        windowTotal: total,
+        windowSize: windowSize,
+        anchorTimestamp: latestInteraction.createdAt,
+      );
     }
 
     return LabelEvaluation(
