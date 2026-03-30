@@ -86,13 +86,20 @@ Future<void> handleLabelTrigger({
           .toList();
       break;
     case LabelTrigger.windowPositiveUpgrade:
-      message = 'The last ${evaluation.windowSize} interactions total '
-          '+${evaluation.windowTotal} points. '
-          '${friend.label.displayName} friends with sustained positive scores '
-          'can be upgraded to Active.';
-      options = [RelationshipLabel.active]
-          .where((l) => l != friend.label)
-          .toList();
+      if (friend.label == RelationshipLabel.obligatory) {
+        message = 'The last ${evaluation.windowSize} interactions total '
+            '+${evaluation.windowTotal} points. '
+            'This relationship seems to be improving — would you like to re-categorize?';
+        options = [RelationshipLabel.responsive, RelationshipLabel.active];
+      } else {
+        message = 'The last ${evaluation.windowSize} interactions total '
+            '+${evaluation.windowTotal} points. '
+            '${friend.label.displayName} friends with sustained positive scores '
+            'can be upgraded to Active.';
+        options = [RelationshipLabel.active]
+            .where((l) => l != friend.label)
+            .toList();
+      }
       break;
     case LabelTrigger.none:
       return;

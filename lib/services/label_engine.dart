@@ -98,7 +98,9 @@ class LabelEngine {
         );
       }
 
-      if (currentLabel == RelationshipLabel.responsive && total > 0) {
+      if ((currentLabel == RelationshipLabel.responsive ||
+              currentLabel == RelationshipLabel.obligatory) &&
+          total > 0) {
         return LabelEvaluation(
           trigger: LabelTrigger.windowPositiveUpgrade,
           windowTotal: total,
