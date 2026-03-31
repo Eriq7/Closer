@@ -31,7 +31,7 @@ class LabelBadge extends StatelessWidget {
         label.displayName,
         style: GoogleFonts.caveat(
           color: colors.text,
-          fontSize: small ? 13 : 15,
+          fontSize: small ? 15 : 16,
           fontWeight: FontWeight.w700,
         ),
       ),

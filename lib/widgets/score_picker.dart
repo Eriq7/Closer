@@ -57,7 +57,7 @@ class ScorePicker extends StatelessWidget {
                           ? scoreTextColor(score)
                           : CrayonColors.textSecondary,
                       fontWeight: FontWeight.w700,
-                      fontSize: isSelected ? 15 : 13,
+                      fontSize: isSelected ? 17 : 15,
                     ),
                   ),
                 ),
@@ -82,7 +82,7 @@ class ScorePicker extends StatelessWidget {
                     scoreDescriptions[selectedScore] ?? '',
                     style: GoogleFonts.caveat(
                       color: scoreTextColor(selectedScore),
-                      fontSize: 16,
+                      fontSize: 17,
                     ),
                   ),
                 ),

@@ -18,8 +18,8 @@ class CrayonColors {
 
   // Text
   static const Color textPrimary   = Color(0xFF555555);
-  static const Color textSecondary = Color(0xFF888888);
-  static const Color textHint      = Color(0xFFAAAAAA);
+  static const Color textSecondary = Color(0xFF777777);
+  static const Color textHint      = Color(0xFF999999);
 
   // Relationship label fills (pastel ice-cream)
   static const Color activeLabel      = Color(0xFF9AE1B5); // mint green
@@ -88,16 +88,16 @@ ThemeData buildCrayonTheme() {
     displaySmall:  base.displaySmall?.copyWith(color: CrayonColors.textPrimary, fontSize: 36),
     headlineLarge: base.headlineLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 34),
     headlineMedium:base.headlineMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 28),
-    headlineSmall: base.headlineSmall?.copyWith(color: CrayonColors.textPrimary, fontSize: 24),
-    titleLarge:    base.titleLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 24, fontWeight: FontWeight.w700),
-    titleMedium:   base.titleMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 20),
-    titleSmall:    base.titleSmall?.copyWith(color: CrayonColors.textPrimary, fontSize: 17),
-    bodyLarge:     base.bodyLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 18),
-    bodyMedium:    base.bodyMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 16),
-    bodySmall:     base.bodySmall?.copyWith(color: CrayonColors.textSecondary, fontSize: 14),
-    labelLarge:    base.labelLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 17),
-    labelMedium:   base.labelMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 15),
-    labelSmall:    base.labelSmall?.copyWith(color: CrayonColors.textSecondary, fontSize: 13),
+    headlineSmall: base.headlineSmall?.copyWith(color: CrayonColors.textPrimary, fontSize: 25),
+    titleLarge:    base.titleLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 25, fontWeight: FontWeight.w700),
+    titleMedium:   base.titleMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 21),
+    titleSmall:    base.titleSmall?.copyWith(color: CrayonColors.textPrimary, fontSize: 18),
+    bodyLarge:     base.bodyLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 19),
+    bodyMedium:    base.bodyMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 17),
+    bodySmall:     base.bodySmall?.copyWith(color: CrayonColors.textSecondary, fontSize: 16),
+    labelLarge:    base.labelLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 18),
+    labelMedium:   base.labelMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 16),
+    labelSmall:    base.labelSmall?.copyWith(color: CrayonColors.textSecondary, fontSize: 15),
   );
 
   final colorScheme = ColorScheme.fromSeed(
@@ -125,7 +125,7 @@ ThemeData buildCrayonTheme() {
       scrolledUnderElevation: 0,
       foregroundColor: CrayonColors.textPrimary,
       titleTextStyle: GoogleFonts.caveat(
-        fontSize: 26,
+        fontSize: 28,
         fontWeight: FontWeight.w700,
         color: CrayonColors.textPrimary,
       ),
@@ -140,12 +140,12 @@ ThemeData buildCrayonTheme() {
       backgroundColor: CrayonColors.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       titleTextStyle: GoogleFonts.caveat(
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: FontWeight.w700,
         color: CrayonColors.textPrimary,
       ),
       contentTextStyle: GoogleFonts.caveat(
-        fontSize: 16,
+        fontSize: 17,
         color: CrayonColors.textPrimary,
       ),
     ),
@@ -164,14 +164,14 @@ ThemeData buildCrayonTheme() {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: CrayonColors.strokeMedium, width: 2),
       ),
-      labelStyle: GoogleFonts.caveat(color: CrayonColors.textSecondary, fontSize: 17),
-      hintStyle:  GoogleFonts.caveat(color: CrayonColors.textHint,      fontSize: 16),
+      labelStyle: GoogleFonts.caveat(color: CrayonColors.textSecondary, fontSize: 18),
+      hintStyle:  GoogleFonts.caveat(color: CrayonColors.textHint,      fontSize: 17),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: CrayonColors.accentPurple,
         foregroundColor: CrayonColors.textPrimary,
-        textStyle: GoogleFonts.caveat(fontSize: 18, fontWeight: FontWeight.w600),
+        textStyle: GoogleFonts.caveat(fontSize: 19, fontWeight: FontWeight.w600),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         elevation: 0,
       ),
@@ -180,14 +180,14 @@ ThemeData buildCrayonTheme() {
       style: FilledButton.styleFrom(
         backgroundColor: CrayonColors.accentPurple,
         foregroundColor: CrayonColors.textPrimary,
-        textStyle: GoogleFonts.caveat(fontSize: 18, fontWeight: FontWeight.w600),
+        textStyle: GoogleFonts.caveat(fontSize: 19, fontWeight: FontWeight.w600),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: CrayonColors.textSecondary,
-        textStyle: GoogleFonts.caveat(fontSize: 16),
+        textStyle: GoogleFonts.caveat(fontSize: 17),
       ),
     ),
     listTileTheme: const ListTileThemeData(
@@ -199,7 +199,7 @@ ThemeData buildCrayonTheme() {
     ),
     chipTheme: ChipThemeData(
       backgroundColor: CrayonColors.surface,
-      labelStyle: GoogleFonts.caveat(fontSize: 15, color: CrayonColors.textPrimary),
+      labelStyle: GoogleFonts.caveat(fontSize: 16, color: CrayonColors.textPrimary),
       side: const BorderSide(color: CrayonColors.strokeLight),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
     ),
@@ -217,7 +217,7 @@ ThemeData buildCrayonTheme() {
     ),
     snackBarTheme: SnackBarThemeData(
       backgroundColor: CrayonColors.surfaceAlt,
-      contentTextStyle: GoogleFonts.caveat(color: CrayonColors.textPrimary, fontSize: 16),
+      contentTextStyle: GoogleFonts.caveat(color: CrayonColors.textPrimary, fontSize: 17),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
       backgroundColor: CrayonColors.accentPurple,

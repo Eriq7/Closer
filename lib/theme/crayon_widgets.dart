@@ -195,7 +195,7 @@ class CrayonButton extends StatelessWidget {
             Text(
               label,
               style: GoogleFonts.caveat(
-                fontSize: 18,
+                fontSize: 19,
                 fontWeight: FontWeight.w700,
                 color: fg,
               ),
@@ -220,7 +220,7 @@ class CrayonSectionHeader extends StatelessWidget {
       child: Text(
         title,
         style: GoogleFonts.caveat(
-          fontSize: 22,
+          fontSize: 24,
           fontWeight: FontWeight.w700,
           color: CrayonColors.textPrimary,
         ),

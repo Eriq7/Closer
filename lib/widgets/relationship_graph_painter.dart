@@ -69,7 +69,7 @@ class RelationshipGraphPainter extends CustomPainter {
         entry.key.displayName,
         Offset(center.dx + r - 4, center.dy - 10),
         color: colors.text.withAlpha(160),
-        fontSize: 11,
+        fontSize: 13,
         align: TextAlign.right,
       );
     }
@@ -116,7 +116,7 @@ class RelationshipGraphPainter extends CustomPainter {
           friend.name.isNotEmpty ? friend.name[0].toUpperCase() : '?',
           nodeCenter - const Offset(0, 7),
           color: colors.text,
-          fontSize: 13,
+          fontSize: 15,
           fontWeight: FontWeight.bold,
         );
 
@@ -126,7 +126,7 @@ class RelationshipGraphPainter extends CustomPainter {
           friend.name,
           Offset(nodeCenter.dx, nodeCenter.dy + 18),
           color: CrayonColors.textSecondary,
-          fontSize: 10,
+          fontSize: 12,
         );
 
         _nodes.add(FriendNode(friend: friend, center: nodeCenter));
@@ -150,7 +150,7 @@ class RelationshipGraphPainter extends CustomPainter {
       userName.isNotEmpty ? userName.split(' ').first : 'You',
       center - const Offset(0, 7),
       color: CrayonColors.accentPurple.withAlpha(200),
-      fontSize: 12,
+      fontSize: 14,
       fontWeight: FontWeight.bold,
     );
   }
@@ -193,7 +193,7 @@ class RelationshipGraphPainter extends CustomPainter {
     String text,
     Offset topCenter, {
     Color color = const Color(0xFF555555),
-    double fontSize = 12,
+    double fontSize = 14,
     FontWeight fontWeight = FontWeight.normal,
     TextAlign align = TextAlign.center,
   }) {

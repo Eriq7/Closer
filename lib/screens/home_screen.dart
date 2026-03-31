@@ -150,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             textAlign: TextAlign.center,
                             style: GoogleFonts.caveat(
                               color: CrayonColors.textHint,
-                              fontSize: 18,
+                              fontSize: 19,
                             ),
                           ),
                         ],
@@ -216,7 +216,7 @@ class _FriendCard extends StatelessWidget {
                 style: GoogleFonts.caveat(
                   color: colors.text,
                   fontWeight: FontWeight.w700,
-                  fontSize: 18,
+                  fontSize: 20,
                 ),
               ),
             ),
@@ -226,7 +226,7 @@ class _FriendCard extends StatelessWidget {
                 friend.name,
                 style: GoogleFonts.caveat(
                   fontWeight: FontWeight.w700,
-                  fontSize: 19,
+                  fontSize: 21,
                   color: CrayonColors.textPrimary,
                 ),
               ),
@@ -286,7 +286,7 @@ class _FilterChip extends StatelessWidget {
           style: GoogleFonts.caveat(
             color: textColor,
             fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
-            fontSize: 15,
+            fontSize: 16,
           ),
         ),
       ),

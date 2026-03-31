@@ -98,7 +98,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                   ),
                   subtitle: Text(
                     label.description,
-                    style: const TextStyle(fontSize: 12),
+                    style: const TextStyle(fontSize: 14),
                   ),
                   contentPadding: EdgeInsets.zero,
                 ),
@@ -124,7 +124,7 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                     freq == ContactFrequency.often
                         ? 'Use last 5 interactions for evaluation'
                         : 'Use last 3 interactions for evaluation',
-                    style: const TextStyle(fontSize: 12),
+                    style: const TextStyle(fontSize: 14),
                   ),
                   contentPadding: EdgeInsets.zero,
                 ),

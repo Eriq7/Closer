@@ -161,7 +161,7 @@ class _InteractionContent extends StatelessWidget {
                 style: GoogleFonts.caveat(
                   color: textCol,
                   fontWeight: FontWeight.w700,
-                  fontSize: 14,
+                  fontSize: 16,
                 ),
               ),
             ),
@@ -170,7 +170,7 @@ class _InteractionContent extends StatelessWidget {
               child: Text(
                 scoreDescriptions[i.score] ?? '',
                 style: GoogleFonts.caveat(
-                  fontSize: 15,
+                  fontSize: 17,
                   color: CrayonColors.textPrimary,
                 ),
               ),
@@ -182,7 +182,7 @@ class _InteractionContent extends StatelessWidget {
           Text(
             i.note!,
             style: GoogleFonts.caveat(
-              fontSize: 14,
+              fontSize: 16,
               color: CrayonColors.textSecondary,
               fontStyle: FontStyle.italic,
             ),
@@ -191,7 +191,7 @@ class _InteractionContent extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           DateFormat('MMM d, yyyy').format(i.createdAt.toLocal()),
-          style: GoogleFonts.caveat(fontSize: 13, color: CrayonColors.textHint),
+          style: GoogleFonts.caveat(fontSize: 15, color: CrayonColors.textHint),
         ),
       ],
     );
@@ -229,7 +229,7 @@ class _LabelChangeContent extends StatelessWidget {
               child: Text(
                 c.triggeredBy.name == 'manual' ? 'Manual' : 'System',
                 style: GoogleFonts.caveat(
-                  fontSize: 12,
+                  fontSize: 14,
                   color: CrayonColors.accentPurple.withValues(alpha: 0.8),
                 ),
               ),
@@ -241,7 +241,7 @@ class _LabelChangeContent extends StatelessWidget {
           Text(
             '"${c.reason}"',
             style: GoogleFonts.caveat(
-              fontSize: 14,
+              fontSize: 16,
               fontStyle: FontStyle.italic,
               color: CrayonColors.textSecondary,
             ),
@@ -250,7 +250,7 @@ class _LabelChangeContent extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           DateFormat('MMM d, yyyy').format(c.createdAt.toLocal()),
-          style: GoogleFonts.caveat(fontSize: 13, color: CrayonColors.textHint),
+          style: GoogleFonts.caveat(fontSize: 15, color: CrayonColors.textHint),
         ),
       ],
     );
@@ -300,7 +300,7 @@ class PeriodDividerTile extends StatelessWidget {
           Text(
             dateRange,
             style: GoogleFonts.caveat(
-              fontSize: 13,
+              fontSize: 15,
               color: CrayonColors.textHint,
             ),
           ),
@@ -309,7 +309,7 @@ class PeriodDividerTile extends StatelessWidget {
             RichText(
               text: TextSpan(
                 style: GoogleFonts.caveat(
-                  fontSize: 13,
+                  fontSize: 15,
                   color: CrayonColors.textHint,
                 ),
                 children: [

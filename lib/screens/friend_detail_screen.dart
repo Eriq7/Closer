@@ -344,7 +344,7 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
                   'Current label: ',
                   style: GoogleFonts.caveat(
                     fontWeight: FontWeight.w600,
-                    fontSize: 17,
+                    fontSize: 18,
                     color: CrayonColors.textPrimary,
                   ),
                 ),
@@ -362,7 +362,7 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
                     textAlign: TextAlign.center,
                     style: GoogleFonts.caveat(
                       color: CrayonColors.textHint,
-                      fontSize: 18,
+                      fontSize: 19,
                     ),
                   ),
                 ),
@@ -406,7 +406,7 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
                         ? 'Show less'
                         : 'Show ${_labelChanges.length - 3} more',
                     style: GoogleFonts.caveat(
-                        fontSize: 16, color: CrayonColors.textSecondary),
+                        fontSize: 17, color: CrayonColors.textSecondary),
                   ),
                 ),
             ],
@@ -466,7 +466,7 @@ class _InteractionTile extends StatelessWidget {
               style: GoogleFonts.caveat(
                 color: textCol,
                 fontWeight: FontWeight.w700,
-                fontSize: 15,
+                fontSize: 17,
               ),
             ),
           ),
@@ -478,7 +478,7 @@ class _InteractionTile extends StatelessWidget {
                 Text(
                   scoreDescriptions[interaction.score] ?? '',
                   style: GoogleFonts.caveat(
-                    fontSize: 17,
+                    fontSize: 18,
                     color: CrayonColors.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
@@ -489,7 +489,7 @@ class _InteractionTile extends StatelessWidget {
                   Text(
                     interaction.note!,
                     style: GoogleFonts.caveat(
-                      fontSize: 15,
+                      fontSize: 17,
                       color: CrayonColors.textSecondary,
                       fontStyle: FontStyle.italic,
                     ),
@@ -500,7 +500,7 @@ class _InteractionTile extends StatelessWidget {
                   DateFormat('MMM d, yyyy')
                       .format(interaction.createdAt.toLocal()),
                   style: GoogleFonts.caveat(
-                    fontSize: 13,
+                    fontSize: 15,
                     color: CrayonColors.textHint,
                   ),
                 ),
@@ -508,9 +508,9 @@ class _InteractionTile extends StatelessWidget {
             ),
           ),
           PopupMenuButton<String>(
-            iconSize: 18,
-            icon: PhosphorIcon(PhosphorIconsThin.dotsThree,
-                size: 18, color: CrayonColors.textSecondary),
+            iconSize: 26,
+            icon: PhosphorIcon(PhosphorIconsBold.dotsThree,
+                size: 26, color: CrayonColors.textPrimary),
             onSelected: (v) {
               if (v == 'edit') onEdit();
               if (v == 'delete') onDelete();
@@ -521,7 +521,7 @@ class _InteractionTile extends StatelessWidget {
                 value: 'delete',
                 child: Text('Delete',
                     style: GoogleFonts.caveat(
-                        color: CrayonColors.scoreNegative2, fontSize: 16)),
+                        color: CrayonColors.scoreNegative2, fontSize: 17)),
               ),
             ],
           ),
@@ -567,14 +567,14 @@ class _LabelChangeTile extends StatelessWidget {
                     ? 'Manual'
                     : 'System',
                 style: GoogleFonts.caveat(
-                  fontSize: 13,
+                  fontSize: 15,
                   color: CrayonColors.textHint,
                 ),
               ),
               PopupMenuButton<String>(
-                iconSize: 18,
-                icon: PhosphorIcon(PhosphorIconsThin.dotsThree,
-                    size: 18, color: CrayonColors.textSecondary),
+                iconSize: 26,
+                icon: PhosphorIcon(PhosphorIconsBold.dotsThree,
+                    size: 26, color: CrayonColors.textPrimary),
                 onSelected: (v) {
                   if (v == 'delete') onDelete();
                 },
@@ -583,7 +583,7 @@ class _LabelChangeTile extends StatelessWidget {
                     value: 'delete',
                     child: Text('Delete',
                         style: GoogleFonts.caveat(
-                            color: CrayonColors.scoreNegative2, fontSize: 16)),
+                            color: CrayonColors.scoreNegative2, fontSize: 17)),
                   ),
                 ],
               ),
@@ -594,7 +594,7 @@ class _LabelChangeTile extends StatelessWidget {
             Text(
               '"${change.reason}"',
               style: GoogleFonts.caveat(
-                fontSize: 15,
+                fontSize: 17,
                 fontStyle: FontStyle.italic,
                 color: CrayonColors.textSecondary,
               ),
@@ -604,7 +604,7 @@ class _LabelChangeTile extends StatelessWidget {
           Text(
             DateFormat('MMM d, yyyy').format(change.createdAt.toLocal()),
             style: GoogleFonts.caveat(
-              fontSize: 13,
+              fontSize: 15,
               color: CrayonColors.textHint,
             ),
           ),
@@ -651,7 +651,7 @@ class _LabelSelectDialogState extends State<_LabelSelectDialog> {
                 title: Text(label.displayName),
                 subtitle: Text(label.description,
                     style: GoogleFonts.caveat(
-                        fontSize: 14, color: CrayonColors.textSecondary)),
+                        fontSize: 16, color: CrayonColors.textSecondary)),
                 contentPadding: EdgeInsets.zero,
               ),
             )
@@ -706,7 +706,7 @@ class _FrequencySelectDialogState extends State<_FrequencySelectDialog> {
                       ? 'Evaluate after 5 interactions'
                       : 'Evaluate after 3 interactions',
                   style: GoogleFonts.caveat(
-                      fontSize: 14, color: CrayonColors.textSecondary),
+                      fontSize: 16, color: CrayonColors.textSecondary),
                 ),
                 contentPadding: EdgeInsets.zero,
               ),

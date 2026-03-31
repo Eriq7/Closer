@@ -157,7 +157,7 @@ class _FriendTimelineScreenState extends State<FriendTimelineScreen> {
               ? Center(
                   child: Text(
                     'No events yet.',
-                    style: GoogleFonts.caveat(color: CrayonColors.textHint, fontSize: 18),
+                    style: GoogleFonts.caveat(color: CrayonColors.textHint, fontSize: 19),
                   ),
                 )
               : CustomScrollView(
@@ -261,7 +261,7 @@ class _StatsHeader extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Last interaction: ${DateFormat('MMM d, yyyy').format(lastDate.toLocal())}',
-              style: GoogleFonts.caveat(fontSize: 13, color: CrayonColors.textHint),
+              style: GoogleFonts.caveat(fontSize: 15, color: CrayonColors.textHint),
             ),
           ],
         ),
@@ -293,7 +293,7 @@ class _StatBox extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
-            style: GoogleFonts.caveat(fontSize: 13, color: CrayonColors.textHint),
+            style: GoogleFonts.caveat(fontSize: 15, color: CrayonColors.textHint),
           ),
         ],
       ),

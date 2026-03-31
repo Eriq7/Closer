@@ -47,7 +47,7 @@ Future<void> handleLabelTrigger({
         content: Text(
           'Based on the last ${evaluation.windowSize} interactions, '
           '${friend.name} is still ${friend.label.displayName}.',
-          style: GoogleFonts.caveat(fontSize: 16, color: CrayonColors.textPrimary),
+          style: GoogleFonts.caveat(fontSize: 17, color: CrayonColors.textPrimary),
         ),
         actions: [
           TextButton(
@@ -184,10 +184,10 @@ class _LabelSuggestionDialogState extends State<_LabelSuggestionDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.message, style: GoogleFonts.caveat(fontSize: 16, color: CrayonColors.textPrimary)),
+          Text(widget.message, style: GoogleFonts.caveat(fontSize: 17, color: CrayonColors.textPrimary)),
           const SizedBox(height: 16),
           if (widget.suggestedOptions.length > 1) ...[
-            Text('Move to:', style: GoogleFonts.caveat(fontWeight: FontWeight.w700, fontSize: 16, color: CrayonColors.textPrimary)),
+            Text('Move to:', style: GoogleFonts.caveat(fontWeight: FontWeight.w700, fontSize: 17, color: CrayonColors.textPrimary)),
             const SizedBox(height: 8),
             ...widget.suggestedOptions.map(
               (label) => RadioListTile<RelationshipLabel>(
@@ -196,7 +196,7 @@ class _LabelSuggestionDialogState extends State<_LabelSuggestionDialog> {
                 onChanged: (v) => setState(() => _selected = v!),
                 title: Text(label.displayName),
                 subtitle: Text(label.description,
-                    style: const TextStyle(fontSize: 12)),
+                    style: const TextStyle(fontSize: 14)),
                 contentPadding: EdgeInsets.zero,
               ),
             ),

@@ -81,7 +81,7 @@ class _LabelOverrideDialogState extends State<LabelOverrideDialog> {
                         style: GoogleFonts.caveat(
                           fontWeight: FontWeight.w700,
                           color: CrayonColors.obligatoryLabelText,
-                          fontSize: 16,
+                          fontSize: 17,
                         ),
                       ),
                     ],
@@ -93,7 +93,7 @@ class _LabelOverrideDialogState extends State<LabelOverrideDialog> {
                     'For your own protection, following the system\'s logic '
                     'is usually better than acting on feelings in the moment.',
                     style: GoogleFonts.caveat(
-                      fontSize: 15,
+                      fontSize: 16,
                       color: CrayonColors.textPrimary,
                     ),
                   ),
@@ -106,7 +106,7 @@ class _LabelOverrideDialogState extends State<LabelOverrideDialog> {
               onChanged: (v) => setState(() => _warningAcknowledged = v ?? false),
               title: Text(
                 'I understand and want to proceed anyway',
-                style: GoogleFonts.caveat(fontSize: 15),
+                style: GoogleFonts.caveat(fontSize: 16),
               ),
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
@@ -116,7 +116,7 @@ class _LabelOverrideDialogState extends State<LabelOverrideDialog> {
               'Why do you want to change this label?',
               style: GoogleFonts.caveat(
                 fontWeight: FontWeight.w700,
-                fontSize: 16,
+                fontSize: 17,
                 color: CrayonColors.textPrimary,
               ),
             ),
