@@ -1,15 +1,19 @@
 // home_screen.dart
 // Main screen: lists all friends grouped by label with filter tabs.
-// Provides navigation to add friend, view friend detail, and log out.
+// Crayon storybook style: CrayonCard friend cards, CrayonChip filter tabs, Phosphor icons.
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../models/friend.dart';
 import '../services/auth_service.dart';
 import '../services/friend_service.dart';
 import '../utils/constants.dart';
 import '../services/notification_service.dart';
 import '../widgets/label_badge.dart';
+import '../theme/crayon_theme.dart';
+import '../theme/crayon_widgets.dart';
 import 'add_friend_screen.dart';
 import 'friend_detail_screen.dart';
 import 'visualization_screen.dart';
@@ -26,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _authService = AuthService();
   List<Friend> _friends = [];
   bool _loading = true;
-  RelationshipLabel? _filter; // null = show all
+  RelationshipLabel? _filter;
 
   @override
   void initState() {
@@ -51,7 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
     } finally {
       if (mounted) setState(() => _loading = false);
     }
-    // Check reminders in background after load (no-op on web).
     NotificationService.checkAndNotify();
   }
 
@@ -67,7 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text('Closer'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.hub_outlined),
+            icon: PhosphorIcon(PhosphorIconsThin.graph,
+                size: 22, color: CrayonColors.textPrimary),
             tooltip: 'Relationship Map',
             onPressed: () => Navigator.of(context)
                 .push(MaterialPageRoute(
@@ -75,7 +79,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 .then((_) => _load()),
           ),
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: PhosphorIcon(PhosphorIconsThin.signOut,
+                size: 22, color: CrayonColors.textPrimary),
             onPressed: () async {
               await _authService.logout();
               if (mounted) context.go('/login');
@@ -101,8 +106,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: _FilterChip(
                       label: l.displayName,
                       selected: _filter == l,
-                      onTap: () => setState(
-                          () => _filter = _filter == l ? null : l),
+                      onTap: () =>
+                          setState(() => _filter = _filter == l ? null : l),
+                      labelKey: l,
                     ),
                   ),
                 ),
@@ -111,14 +117,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: CrayonButton(
+        label: 'Add Person',
+        icon: PhosphorIconsThin.userPlus,
+        seed: 200,
         onPressed: () async {
           final added = await Navigator.of(context).push<bool>(
             MaterialPageRoute(builder: (_) => const AddFriendScreen()),
           );
           if (added == true) _load();
         },
-        child: const Icon(Icons.person_add),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -129,15 +137,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.people_outline,
-                              size: 64, color: Colors.grey),
+                          PhosphorIcon(
+                            PhosphorIconsThin.users,
+                            size: 64,
+                            color: CrayonColors.textHint,
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             _filter == null
                                 ? 'No people yet.\nTap + to add someone.'
                                 : 'No ${_filter!.displayName} contacts.',
                             textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.grey),
+                            style: GoogleFonts.caveat(
+                              color: CrayonColors.textHint,
+                              fontSize: 18,
+                            ),
                           ),
                         ],
                       ),
@@ -150,11 +164,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         final friend = _filtered[index];
                         return _FriendCard(
                           friend: friend,
+                          index: index,
                           onTap: () async {
                             await Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => FriendDetailScreen(
-                                    friendId: friend.id),
+                                builder: (_) =>
+                                    FriendDetailScreen(friendId: friend.id),
                               ),
                             );
                             _load();
@@ -170,29 +185,55 @@ class _HomeScreenState extends State<HomeScreen> {
 class _FriendCard extends StatelessWidget {
   final Friend friend;
   final VoidCallback onTap;
+  final int index;
 
-  const _FriendCard({required this.friend, required this.onTap});
+  const _FriendCard({
+    required this.friend,
+    required this.onTap,
+    required this.index,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          child: Text(
-            friend.name.isNotEmpty ? friend.name[0].toUpperCase() : '?',
-          ),
+    final colors = labelCrayonColors(friend.label);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: CrayonCard(
+        seed: index * 31 + 7,
+        fillColor: CrayonColors.surface,
+        strokeColor: CrayonColors.strokeLight,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            CrayonCircle(
+              fillColor: colors.fill.withAlpha(100),
+              strokeColor: colors.border,
+              size: 44,
+              seed: friend.name.hashCode & 0xFF,
+              child: Text(
+                friend.name.isNotEmpty ? friend.name[0].toUpperCase() : '?',
+                style: GoogleFonts.caveat(
+                  color: colors.text,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                friend.name,
+                style: GoogleFonts.caveat(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 19,
+                  color: CrayonColors.textPrimary,
+                ),
+              ),
+            ),
+            LabelBadge(label: friend.label, small: true),
+          ],
         ),
-        title: Text(friend.name,
-            style: const TextStyle(fontWeight: FontWeight.w600)),
-        trailing: LabelBadge(label: friend.label, small: true),
       ),
     );
   }
@@ -202,29 +243,50 @@ class _FilterChip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final RelationshipLabel? labelKey;
 
-  const _FilterChip(
-      {required this.label, required this.selected, required this.onTap});
+  const _FilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+    this.labelKey,
+  });
 
   @override
   Widget build(BuildContext context) {
+    Color fill;
+    Color stroke;
+    Color textColor;
+
+    if (selected) {
+      if (labelKey != null) {
+        final colors = labelCrayonColors(labelKey!);
+        fill = colors.fill;
+        stroke = colors.border;
+        textColor = colors.text;
+      } else {
+        fill = CrayonColors.accentPurple;
+        stroke = CrayonColors.accentPurple.withAlpha(180);
+        textColor = CrayonColors.textPrimary;
+      }
+    } else {
+      fill = CrayonColors.surfaceAlt;
+      stroke = CrayonColors.strokeLight;
+      textColor = CrayonColors.textSecondary;
+    }
+
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
-          color: selected
-              ? Theme.of(context).colorScheme.primary
-              : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(20),
-        ),
+      child: CrayonChip(
+        fillColor: fill,
+        strokeColor: stroke,
+        seed: label.hashCode & 0xFF,
         child: Text(
           label,
-          style: TextStyle(
-            color: selected ? Colors.white : Colors.black87,
-            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
-            fontSize: 13,
+          style: GoogleFonts.caveat(
+            color: textColor,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.normal,
+            fontSize: 15,
           ),
         ),
       ),

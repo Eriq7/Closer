@@ -1,9 +1,12 @@
 // score_picker.dart
 // Interactive widget for selecting a score from -3 to +3.
-// Shows the score description inline as the user changes selection.
+// Uses CrayonCircle for the score buttons and CrayonCard for the description box.
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../utils/constants.dart';
+import '../theme/crayon_theme.dart';
+import '../theme/crayon_widgets.dart';
 
 class ScorePicker extends StatelessWidget {
   final int selectedScore;
@@ -15,14 +18,12 @@ class ScorePicker extends StatelessWidget {
     required this.onChanged,
   });
 
-  Color _colorForScore(int score) {
-    if (score >= 2) return const Color(0xFF2E7D32);
-    if (score == 1) return const Color(0xFF558B2F);
-    if (score == 0) return Colors.grey;
-    if (score == -1) return const Color(0xFFE65100);
-    if (score == -2) return const Color(0xFFC62828);
-    return const Color(0xFF880E4F);
+  Color _fillForScore(int score, bool selected) {
+    final base = scoreFillColor(score);
+    return selected ? base : base.withValues(alpha: 0.3);
   }
+
+  Color _strokeForScore(int score) => scoreFillColor(score);
 
   @override
   Widget build(BuildContext context) {
@@ -34,28 +35,30 @@ class ScorePicker extends StatelessWidget {
           children: List.generate(7, (i) {
             final score = i - 3;
             final isSelected = score == selectedScore;
-            final color = _colorForScore(score);
+            final label = score > 0 ? '+$score' : '$score';
+            final seed = score + 100;
+
             return GestureDetector(
               onTap: () => onChanged(score),
-              child: AnimatedContainer(
+              child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 150),
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isSelected ? color : color.withOpacity(0.1),
-                  border: Border.all(
-                    color: isSelected ? color : color.withOpacity(0.3),
-                    width: isSelected ? 2 : 1,
-                  ),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  score > 0 ? '+$score' : '$score',
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                opacity: isSelected ? 1.0 : 0.65,
+                child: CrayonCircle(
+                  fillColor: _fillForScore(score, isSelected),
+                  strokeColor: isSelected
+                      ? _strokeForScore(score)
+                      : _strokeForScore(score).withValues(alpha: 0.4),
+                  size: isSelected ? 44 : 38,
+                  seed: seed,
+                  child: Text(
+                    label,
+                    style: GoogleFonts.caveat(
+                      color: isSelected
+                          ? scoreTextColor(score)
+                          : CrayonColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                      fontSize: isSelected ? 15 : 13,
+                    ),
                   ),
                 ),
               ),
@@ -65,19 +68,25 @@ class ScorePicker extends StatelessWidget {
         const SizedBox(height: 12),
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 150),
-          child: Container(
+          child: CrayonCard(
             key: ValueKey(selectedScore),
+            fillColor: scoreFillColor(selectedScore).withValues(alpha: 0.15),
+            strokeColor: scoreFillColor(selectedScore).withValues(alpha: 0.4),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: _colorForScore(selectedScore).withOpacity(0.07),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              scoreDescriptions[selectedScore] ?? '',
-              style: TextStyle(
-                color: _colorForScore(selectedScore),
-                fontSize: 13,
-              ),
+            cornerRadius: 10,
+            seed: selectedScore + 200,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    scoreDescriptions[selectedScore] ?? '',
+                    style: GoogleFonts.caveat(
+                      color: scoreTextColor(selectedScore),
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

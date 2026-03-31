@@ -4,6 +4,7 @@
 // engine and shows a suggestion dialog if a trigger fires.
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/friend.dart';
 import '../models/interaction.dart';
 import '../services/friend_service.dart';
@@ -11,6 +12,7 @@ import '../services/interaction_service.dart';
 import '../services/label_engine.dart';
 import '../widgets/label_trigger_handler.dart';
 import '../widgets/score_picker.dart';
+import '../theme/crayon_theme.dart';
 
 class EditInteractionScreen extends StatefulWidget {
   final Friend friend;
@@ -97,9 +99,13 @@ class _EditInteractionScreenState extends State<EditInteractionScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
+            Text(
               'How did this interaction feel?',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: GoogleFonts.caveat(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: CrayonColors.textPrimary,
+              ),
             ),
             const SizedBox(height: 20),
             ScorePicker(
@@ -113,7 +119,6 @@ class _EditInteractionScreenState extends State<EditInteractionScreen> {
               decoration: const InputDecoration(
                 labelText: 'Why this score? (optional)',
                 hintText: 'Write a note, or leave blank...',
-                border: OutlineInputBorder(),
               ),
             ),
             const Spacer(),

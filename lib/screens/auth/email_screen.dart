@@ -4,7 +4,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
+import '../../theme/crayon_theme.dart';
 
 class EmailScreen extends StatefulWidget {
   const EmailScreen({super.key});
@@ -51,19 +53,26 @@ class _EmailScreenState extends State<EmailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
+                Text(
                   'Closer',
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.caveat(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w700,
+                    color: CrayonColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Manage relationships with clarity.',
-                  style: TextStyle(color: Colors.grey),
+                  style: GoogleFonts.caveat(
+                    color: CrayonColors.textSecondary,
+                    fontSize: 18,
+                  ),
                 ),
                 const SizedBox(height: 48),
-                const Text(
+                Text(
                   'Enter your email to sign in or create an account.',
-                  style: TextStyle(fontSize: 15),
+                  style: GoogleFonts.caveat(fontSize: 18, color: CrayonColors.textPrimary),
                 ),
                 const SizedBox(height: 20),
                 TextFormField(
@@ -72,7 +81,6 @@ class _EmailScreenState extends State<EmailScreen> {
                   autofocus: true,
                   decoration: const InputDecoration(
                     labelText: 'Email',
-                    border: OutlineInputBorder(),
                   ),
                   validator: (v) =>
                       v == null || !v.contains('@') ? 'Enter a valid email' : null,
@@ -80,7 +88,13 @@ class _EmailScreenState extends State<EmailScreen> {
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 12),
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  Text(
+                    _error!,
+                    style: GoogleFonts.caveat(
+                      color: CrayonColors.scoreNegative2,
+                      fontSize: 16,
+                    ),
+                  ),
                 ],
                 const SizedBox(height: 24),
                 FilledButton(
@@ -88,7 +102,7 @@ class _EmailScreenState extends State<EmailScreen> {
                   child: _loading
                       ? const SizedBox(
                           height: 20, width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Text('Send Code'),
                 ),

@@ -1,10 +1,12 @@
 // friend_detail_screen.dart
 // Displays a friend's current label, all past interactions, and label change history.
-// Also provides manual label override, interaction edit/delete, and friend deletion.
+// Crayon storybook style: CrayonCard tiles, CrayonCircle score badges, CrayonButton FAB.
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../models/friend.dart';
 import '../models/interaction.dart';
 import '../models/label_change.dart';
@@ -14,6 +16,8 @@ import '../utils/constants.dart';
 import '../widgets/label_badge.dart';
 import '../widgets/label_override_dialog.dart';
 import '../widgets/label_trigger_handler.dart';
+import '../theme/crayon_theme.dart';
+import '../theme/crayon_widgets.dart';
 import 'add_interaction_screen.dart';
 import 'edit_interaction_screen.dart';
 import 'friend_timeline_screen.dart';
@@ -48,15 +52,14 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
     try {
       final friends = await _friendService.getFriends();
       _friend = friends.firstWhere((f) => f.id == widget.friendId);
-      _interactions = await _interactionService
-          .getInteractionsForFriend(widget.friendId);
-      _labelChanges = await _interactionService
-          .getLabelChangesForFriend(widget.friendId);
+      _interactions =
+          await _interactionService.getInteractionsForFriend(widget.friendId);
+      _labelChanges =
+          await _interactionService.getLabelChangesForFriend(widget.friendId);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
 
-    // Show pending evaluation dialog if one was saved while user was away.
     if (mounted && _friend?.pendingEvaluation != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!mounted) return;
@@ -67,7 +70,6 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
           friendService: _friendService,
           interactionService: _interactionService,
         );
-        // clearPendingEvaluation is handled inside handleLabelTrigger.
         if (mounted) _load();
       });
     }
@@ -75,9 +77,8 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
 
   Future<void> _manualLabelChange() async {
     if (_friend == null) return;
-    final labels = RelationshipLabel.values
-        .where((l) => l != _friend!.label)
-        .toList();
+    final labels =
+        RelationshipLabel.values.where((l) => l != _friend!.label).toList();
 
     final toLabel = await showDialog<RelationshipLabel>(
       context: context,
@@ -113,10 +114,8 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
   Future<void> _editInteraction(Interaction interaction) async {
     final updated = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
-        builder: (_) => EditInteractionScreen(
-          friend: _friend!,
-          interaction: interaction,
-        ),
+        builder: (_) =>
+            EditInteractionScreen(friend: _friend!, interaction: interaction),
       ),
     );
     if (updated == true) _load();
@@ -134,7 +133,8 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(
+                backgroundColor: CrayonColors.scoreNegative2),
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text('Delete'),
           ),
@@ -192,8 +192,7 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
+                backgroundColor: CrayonColors.scoreNegative2),
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text('Delete'),
           ),
@@ -207,10 +206,10 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
   }
 
   Future<void> _deleteLabelChange(LabelChange change) async {
-    final isLatest = _labelChanges.isNotEmpty && _labelChanges.first.id == change.id;
+    final isLatest =
+        _labelChanges.isNotEmpty && _labelChanges.first.id == change.id;
 
     if (isLatest) {
-      // Warn user that label will revert to previous value.
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (_) => AlertDialog(
@@ -224,7 +223,8 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
               child: const Text('Cancel'),
             ),
             FilledButton(
-              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              style: FilledButton.styleFrom(
+                  backgroundColor: CrayonColors.scoreNegative2),
               onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Delete & Revert'),
             ),
@@ -250,7 +250,8 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
               child: const Text('Cancel'),
             ),
             FilledButton(
-              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              style: FilledButton.styleFrom(
+                  backgroundColor: CrayonColors.scoreNegative2),
               onPressed: () => Navigator.of(context).pop(true),
               child: const Text('Delete'),
             ),
@@ -279,7 +280,8 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
         title: Text(_friend!.name),
         actions: [
           IconButton(
-            icon: const Icon(Icons.timeline),
+            icon: PhosphorIcon(PhosphorIconsThin.chartLine,
+                size: 22, color: CrayonColors.textPrimary),
             tooltip: 'Timeline',
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(
@@ -305,15 +307,22 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
                 value: 'change_frequency',
                 child: Text('Change contact frequency'),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete',
-                child: Text('Remove person', style: TextStyle(color: Colors.red)),
+                child: Text(
+                  'Remove person',
+                  style: GoogleFonts.caveat(color: CrayonColors.scoreNegative2),
+                ),
               ),
             ],
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: CrayonButton(
+        label: 'Log Interaction',
+        icon: PhosphorIconsThin.plus,
+        backgroundColor: CrayonColors.accentPurple,
+        seed: 55,
         onPressed: () async {
           final updated = await Navigator.of(context).push<bool>(
             MaterialPageRoute(
@@ -322,72 +331,87 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
           );
           if (updated == true) _load();
         },
-        icon: const Icon(Icons.add),
-        label: const Text('Log Interaction'),
       ),
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            // Label row
+            // Current label row
             Row(
               children: [
-                const Text('Current label: ',
-                    style: TextStyle(fontWeight: FontWeight.w600)),
+                Text(
+                  'Current label: ',
+                  style: GoogleFonts.caveat(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 17,
+                    color: CrayonColors.textPrimary,
+                  ),
+                ),
                 LabelBadge(label: _friend!.label),
               ],
             ),
             const SizedBox(height: 20),
 
             if (_interactions.isEmpty && _labelChanges.isEmpty)
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(32),
                   child: Text(
                     'No interactions yet.\nLog your first one!',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
+                    style: GoogleFonts.caveat(
+                      color: CrayonColors.textHint,
+                      fontSize: 18,
+                    ),
                   ),
                 ),
               ),
 
             // Interactions section
             if (_interactions.isNotEmpty) ...[
-              const Text('Interactions',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
-              ..._interactions.map((i) => _InteractionTile(
-                    interaction: i,
-                    onEdit: () => _editInteraction(i),
-                    onDelete: () => _deleteInteraction(i),
+              CrayonSectionHeader('Interactions'),
+              ..._interactions.mapIndexed((i, index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: _InteractionTile(
+                      interaction: i,
+                      index: index,
+                      onEdit: () => _editInteraction(i),
+                      onDelete: () => _deleteInteraction(i),
+                    ),
                   )),
               const SizedBox(height: 20),
             ],
 
-            // Label changes section
+            // Label history section
             if (_labelChanges.isNotEmpty) ...[
-              const Text('Label History',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 8),
+              CrayonSectionHeader('Label History'),
               ...(_labelHistoryExpanded
                       ? _labelChanges
                       : _labelChanges.take(3).toList())
-                  .map((c) => _LabelChangeTile(
-                        change: c,
-                        onDelete: () => _deleteLabelChange(c),
+                  .mapIndexed((c, index) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _LabelChangeTile(
+                          change: c,
+                          index: index,
+                          onDelete: () => _deleteLabelChange(c),
+                        ),
                       )),
               if (_labelChanges.length > 3)
                 TextButton(
                   onPressed: () => setState(
                       () => _labelHistoryExpanded = !_labelHistoryExpanded),
-                  child: Text(_labelHistoryExpanded
-                      ? 'Show less'
-                      : 'Show ${_labelChanges.length - 3} more'),
+                  child: Text(
+                    _labelHistoryExpanded
+                        ? 'Show less'
+                        : 'Show ${_labelChanges.length - 3} more',
+                    style: GoogleFonts.caveat(
+                        fontSize: 16, color: CrayonColors.textSecondary),
+                  ),
                 ),
             ],
 
-            const SizedBox(height: 80), // fab clearance
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -395,98 +419,113 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
   }
 }
 
+// Extension to get index in map
+extension _IndexedIterable<T> on Iterable<T> {
+  Iterable<R> mapIndexed<R>(R Function(T e, int i) transform) {
+    var index = 0;
+    return map((e) => transform(e, index++));
+  }
+}
+
 class _InteractionTile extends StatelessWidget {
   final Interaction interaction;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final int index;
 
   const _InteractionTile({
     required this.interaction,
     required this.onEdit,
     required this.onDelete,
+    required this.index,
   });
-
-  Color get _scoreColor {
-    if (interaction.score > 0) return const Color(0xFF2E7D32);
-    if (interaction.score == 0) return Colors.grey;
-    return const Color(0xFFC62828);
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: Colors.grey.shade200),
-      ),
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _scoreColor.withOpacity(0.1),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                interaction.score > 0
-                    ? '+${interaction.score}'
-                    : '${interaction.score}',
-                style: TextStyle(
-                  color: _scoreColor,
-                  fontWeight: FontWeight.bold,
-                ),
+    final fill = scoreFillColor(interaction.score);
+    final textCol = scoreTextColor(interaction.score);
+    final label = interaction.score > 0
+        ? '+${interaction.score}'
+        : '${interaction.score}';
+
+    return CrayonCard(
+      seed: index * 11 + 3,
+      fillColor: CrayonColors.surface,
+      strokeColor: CrayonColors.strokeLight,
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CrayonCircle(
+            fillColor: fill.withAlpha(80),
+            strokeColor: fill,
+            size: 44,
+            seed: interaction.score + 20,
+            child: Text(
+              label,
+              style: GoogleFonts.caveat(
+                color: textCol,
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    scoreDescriptions[interaction.score] ?? '',
-                    style: const TextStyle(fontSize: 13),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  scoreDescriptions[interaction.score] ?? '',
+                  style: GoogleFonts.caveat(
+                    fontSize: 17,
+                    color: CrayonColors.textPrimary,
+                    fontWeight: FontWeight.w600,
                   ),
-                  if (interaction.note != null &&
-                      interaction.note!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      interaction.note!,
-                      style: const TextStyle(
-                          fontSize: 12, color: Colors.black54),
-                    ),
-                  ],
+                ),
+                if (interaction.note != null &&
+                    interaction.note!.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
-                    DateFormat('MMM d, yyyy').format(
-                        interaction.createdAt.toLocal()),
-                    style: const TextStyle(fontSize: 11, color: Colors.grey),
+                    interaction.note!,
+                    style: GoogleFonts.caveat(
+                      fontSize: 15,
+                      color: CrayonColors.textSecondary,
+                      fontStyle: FontStyle.italic,
+                    ),
                   ),
                 ],
-              ),
-            ),
-            PopupMenuButton<String>(
-              iconSize: 18,
-              onSelected: (v) {
-                if (v == 'edit') onEdit();
-                if (v == 'delete') onDelete();
-              },
-              itemBuilder: (_) => [
-                const PopupMenuItem(value: 'edit', child: Text('Edit')),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Text('Delete', style: TextStyle(color: Colors.red)),
+                const SizedBox(height: 4),
+                Text(
+                  DateFormat('MMM d, yyyy')
+                      .format(interaction.createdAt.toLocal()),
+                  style: GoogleFonts.caveat(
+                    fontSize: 13,
+                    color: CrayonColors.textHint,
+                  ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          PopupMenuButton<String>(
+            iconSize: 18,
+            icon: PhosphorIcon(PhosphorIconsThin.dotsThree,
+                size: 18, color: CrayonColors.textSecondary),
+            onSelected: (v) {
+              if (v == 'edit') onEdit();
+              if (v == 'delete') onDelete();
+            },
+            itemBuilder: (_) => [
+              const PopupMenuItem(value: 'edit', child: Text('Edit')),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text('Delete',
+                    style: GoogleFonts.caveat(
+                        color: CrayonColors.scoreNegative2, fontSize: 16)),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -495,67 +534,81 @@ class _InteractionTile extends StatelessWidget {
 class _LabelChangeTile extends StatelessWidget {
   final LabelChange change;
   final VoidCallback onDelete;
-  const _LabelChangeTile({required this.change, required this.onDelete});
+  final int index;
+
+  const _LabelChangeTile({
+    required this.change,
+    required this.onDelete,
+    required this.index,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Colors.grey.shade50,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-        side: BorderSide(color: Colors.grey.shade200),
-      ),
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                LabelBadge(label: change.fromLabel, small: true),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 6),
-                  child: Icon(Icons.arrow_forward, size: 14, color: Colors.grey),
-                ),
-                LabelBadge(label: change.toLabel, small: true),
-                const Spacer(),
-                Text(
-                  change.triggeredBy == ChangeTriggeredBy.manual
-                      ? 'Manual'
-                      : 'System',
-                  style: const TextStyle(fontSize: 11, color: Colors.grey),
-                ),
-                PopupMenuButton<String>(
-                  iconSize: 18,
-                  onSelected: (v) {
-                    if (v == 'delete') onDelete();
-                  },
-                  itemBuilder: (_) => [
-                    const PopupMenuItem(
-                      value: 'delete',
-                      child: Text('Delete', style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            if (change.reason != null && change.reason!.isNotEmpty) ...[
-              const SizedBox(height: 6),
+    return CrayonCard(
+      seed: index * 17 + 9,
+      fillColor: CrayonColors.surfaceAlt,
+      strokeColor: CrayonColors.strokeLight,
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              LabelBadge(label: change.fromLabel, small: true),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                child: PhosphorIcon(PhosphorIconsThin.arrowRight,
+                    size: 14, color: CrayonColors.textSecondary),
+              ),
+              LabelBadge(label: change.toLabel, small: true),
+              const Spacer(),
               Text(
-                '"${change.reason}"',
-                style: const TextStyle(
-                    fontSize: 12, fontStyle: FontStyle.italic, color: Colors.black54),
+                change.triggeredBy == ChangeTriggeredBy.manual
+                    ? 'Manual'
+                    : 'System',
+                style: GoogleFonts.caveat(
+                  fontSize: 13,
+                  color: CrayonColors.textHint,
+                ),
+              ),
+              PopupMenuButton<String>(
+                iconSize: 18,
+                icon: PhosphorIcon(PhosphorIconsThin.dotsThree,
+                    size: 18, color: CrayonColors.textSecondary),
+                onSelected: (v) {
+                  if (v == 'delete') onDelete();
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Text('Delete',
+                        style: GoogleFonts.caveat(
+                            color: CrayonColors.scoreNegative2, fontSize: 16)),
+                  ),
+                ],
               ),
             ],
-            const SizedBox(height: 4),
+          ),
+          if (change.reason != null && change.reason!.isNotEmpty) ...[
+            const SizedBox(height: 6),
             Text(
-              DateFormat('MMM d, yyyy').format(change.createdAt.toLocal()),
-              style: const TextStyle(fontSize: 11, color: Colors.grey),
+              '"${change.reason}"',
+              style: GoogleFonts.caveat(
+                fontSize: 15,
+                fontStyle: FontStyle.italic,
+                color: CrayonColors.textSecondary,
+              ),
             ),
           ],
-        ),
+          const SizedBox(height: 4),
+          Text(
+            DateFormat('MMM d, yyyy').format(change.createdAt.toLocal()),
+            style: GoogleFonts.caveat(
+              fontSize: 13,
+              color: CrayonColors.textHint,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -597,7 +650,8 @@ class _LabelSelectDialogState extends State<_LabelSelectDialog> {
                 onChanged: (v) => setState(() => _selected = v!),
                 title: Text(label.displayName),
                 subtitle: Text(label.description,
-                    style: const TextStyle(fontSize: 12)),
+                    style: GoogleFonts.caveat(
+                        fontSize: 14, color: CrayonColors.textSecondary)),
                 contentPadding: EdgeInsets.zero,
               ),
             )
@@ -651,7 +705,8 @@ class _FrequencySelectDialogState extends State<_FrequencySelectDialog> {
                   freq == ContactFrequency.often
                       ? 'Evaluate after 5 interactions'
                       : 'Evaluate after 3 interactions',
-                  style: const TextStyle(fontSize: 12),
+                  style: GoogleFonts.caveat(
+                      fontSize: 14, color: CrayonColors.textSecondary),
                 ),
                 contentPadding: EdgeInsets.zero,
               ),

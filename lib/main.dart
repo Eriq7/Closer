@@ -4,12 +4,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/auth/email_screen.dart';
 import 'screens/auth/otp_screen.dart';
 import 'screens/auth/setup_name_screen.dart';
 import 'screens/home_screen.dart';
 import 'services/notification_service.dart';
+import 'theme/crayon_theme.dart';
+import 'theme/crayon_widgets.dart';
 
 const _supabaseUrl = 'https://yaknivkhuzqyjrijqdss.supabase.co';
 const _supabaseAnonKey =
@@ -19,6 +22,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Supabase.initialize(url: _supabaseUrl, anonKey: _supabaseAnonKey);
   await NotificationService.init();
+  // Allow runtime font fetching; fonts are disk-cached after first download.
+  GoogleFonts.config.allowRuntimeFetching = true;
+  // Pre-warm the font cache by calling the text theme ahead of the first frame.
+  GoogleFonts.caveatTextTheme();
   runApp(const CloserApp());
 }
 
@@ -53,11 +60,9 @@ class CloserApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'Closer',
-      theme: ThemeData(
-        colorSchemeSeed: Colors.indigo,
-        useMaterial3: true,
-      ),
+      theme: buildCrayonTheme(),
       routerConfig: _router,
+      builder: (context, child) => PaperBackground(child: child!),
     );
   }
 }

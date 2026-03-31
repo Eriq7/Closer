@@ -4,9 +4,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/friend_service.dart';
 import '../utils/constants.dart';
 import '../widgets/label_badge.dart';
+import '../theme/crayon_theme.dart';
 
 class AddFriendScreen extends StatefulWidget {
   const AddFriendScreen({super.key});
@@ -67,15 +69,18 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                 autofocus: true,
                 decoration: const InputDecoration(
                   labelText: 'Name',
-                  border: OutlineInputBorder(),
                 ),
                 validator: (v) =>
                     v == null || v.trim().isEmpty ? 'Enter a name' : null,
               ),
               const SizedBox(height: 28),
-              const Text(
+              Text(
                 'How would you categorize this relationship?',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: GoogleFonts.caveat(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  color: CrayonColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 12),
               ...RelationshipLabel.values.map(
@@ -99,9 +104,13 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
                 ),
               ),
               const Spacer(),
-              const Text(
+              Text(
                 'How often do you see them?',
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: GoogleFonts.caveat(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  color: CrayonColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 8),
               ...ContactFrequency.values.map(

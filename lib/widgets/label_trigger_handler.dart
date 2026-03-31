@@ -11,12 +11,14 @@
 // - clearPendingEvaluation is called internally; callers do NOT need to call it.
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/friend.dart';
 import '../models/label_change.dart';
 import '../services/friend_service.dart';
 import '../services/interaction_service.dart';
 import '../services/label_engine.dart';
 import '../utils/constants.dart';
+import '../theme/crayon_theme.dart';
 
 /// Shows the label suggestion dialog for [evaluation] and, if the user accepts,
 /// updates the friend's label and records a system-triggered label change.
@@ -45,6 +47,7 @@ Future<void> handleLabelTrigger({
         content: Text(
           'Based on the last ${evaluation.windowSize} interactions, '
           '${friend.name} is still ${friend.label.displayName}.',
+          style: GoogleFonts.caveat(fontSize: 16, color: CrayonColors.textPrimary),
         ),
         actions: [
           TextButton(
@@ -181,10 +184,10 @@ class _LabelSuggestionDialogState extends State<_LabelSuggestionDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.message, style: const TextStyle(fontSize: 14)),
+          Text(widget.message, style: GoogleFonts.caveat(fontSize: 16, color: CrayonColors.textPrimary)),
           const SizedBox(height: 16),
           if (widget.suggestedOptions.length > 1) ...[
-            const Text('Move to:', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text('Move to:', style: GoogleFonts.caveat(fontWeight: FontWeight.w700, fontSize: 16, color: CrayonColors.textPrimary)),
             const SizedBox(height: 8),
             ...widget.suggestedOptions.map(
               (label) => RadioListTile<RelationshipLabel>(

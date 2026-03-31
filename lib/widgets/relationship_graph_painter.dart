@@ -1,13 +1,13 @@
 // relationship_graph_painter.dart
 // CustomPainter that draws a concentric-circle relationship map.
 // Center = user ("You"). 4 rings = Active / Responsive / Obligatory / Cut-off.
-// Returns tap hit info so the parent can navigate to a friend's detail screen.
+// Crayon storybook style: slightly wobbly ring paths, pastel fills, Caveat-like text.
 
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../models/friend.dart';
 import '../utils/constants.dart';
-import '../widgets/label_badge.dart';
+import '../theme/crayon_theme.dart';
 
 /// Holds the computed screen position of a friend node, used for tap detection.
 class FriendNode {
@@ -20,10 +20,8 @@ class RelationshipGraphPainter extends CustomPainter {
   final List<Friend> friends;
   final String userName;
 
-  // Ring radii as fractions of the min dimension / 2 (i.e. of the available radius).
   static const _ringFractions = [0.25, 0.50, 0.72, 0.92];
 
-  // Order: Active = ring 0 (innermost), Cut-off = ring 3 (outermost).
   static const _labelRingIndex = {
     RelationshipLabel.active: 0,
     RelationshipLabel.responsive: 1,
@@ -41,38 +39,37 @@ class RelationshipGraphPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final maxR = min(size.width, size.height) / 2 - 24;
 
-    // Draw ring fills and borders.
+    // Draw ring fills and borders (slightly wobbly circles).
     for (int i = _ringFractions.length - 1; i >= 0; i--) {
       final r = maxR * _ringFractions[i];
-      final label = _labelRingIndex.entries
-          .firstWhere((e) => e.value == i)
-          .key;
-      final color = labelColors[label]!;
-      canvas.drawCircle(
-        center,
-        r,
-        Paint()..color = color.withOpacity(0.06),
+      final label = _labelRingIndex.entries.firstWhere((e) => e.value == i).key;
+      final colors = labelCrayonColors(label);
+
+      // Wobbly fill circle
+      canvas.drawPath(
+        _wobblyCirclePath(center, r, seed: i * 13 + 7),
+        Paint()..color = colors.fill.withAlpha(25),
       );
-      canvas.drawCircle(
-        center,
-        r,
+      // Wobbly stroke circle
+      canvas.drawPath(
+        _wobblyCirclePath(center, r, seed: i * 13 + 7),
         Paint()
-          ..color = color.withOpacity(0.25)
+          ..color = colors.border.withAlpha(70)
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2,
+          ..strokeWidth = 1.5,
       );
     }
 
-    // Draw ring labels (small text on the right edge of each ring).
+    // Draw ring labels.
     for (final entry in _labelRingIndex.entries) {
       final r = maxR * _ringFractions[entry.value];
-      final color = labelColors[entry.key]!;
+      final colors = labelCrayonColors(entry.key);
       _drawText(
         canvas,
         entry.key.displayName,
         Offset(center.dx + r - 4, center.dy - 10),
-        color: color.withOpacity(0.6),
-        fontSize: 10,
+        color: colors.text.withAlpha(160),
+        fontSize: 11,
         align: TextAlign.right,
       );
     }
@@ -80,8 +77,7 @@ class RelationshipGraphPainter extends CustomPainter {
     // Place friend nodes on their ring.
     final grouped = <RelationshipLabel, List<Friend>>{};
     for (final label in RelationshipLabel.values) {
-      grouped[label] =
-          friends.where((f) => f.label == label).toList();
+      grouped[label] = friends.where((f) => f.label == label).toList();
     }
 
     for (final entry in grouped.entries) {
@@ -90,47 +86,46 @@ class RelationshipGraphPainter extends CustomPainter {
       final count = entry.value.length;
       if (count == 0) continue;
 
+      final colors = labelCrayonColors(entry.key);
+
       for (int i = 0; i < count; i++) {
-        final angle = (2 * pi / count) * i - pi / 2; // start at top
+        final angle = (2 * pi / count) * i - pi / 2;
         final nodeCenter = Offset(
           center.dx + r * cos(angle),
           center.dy + r * sin(angle),
         );
-
         final friend = entry.value[i];
-        final color = labelColors[entry.key]!;
+        final seed = friend.name.hashCode & 0xFF;
 
-        // Draw node circle.
-        canvas.drawCircle(
-          nodeCenter,
-          14,
-          Paint()..color = color.withOpacity(0.15),
+        // Wobbly node circle fill
+        canvas.drawPath(
+          _wobblyCirclePath(nodeCenter, 14, seed: seed),
+          Paint()..color = colors.fill.withAlpha(70),
         );
-        canvas.drawCircle(
-          nodeCenter,
-          14,
+        canvas.drawPath(
+          _wobblyCirclePath(nodeCenter, 14, seed: seed),
           Paint()
-            ..color = color.withOpacity(0.5)
+            ..color = colors.border.withAlpha(160)
             ..style = PaintingStyle.stroke
             ..strokeWidth = 1.5,
         );
 
-        // Draw initial letter.
+        // Initial letter
         _drawText(
           canvas,
           friend.name.isNotEmpty ? friend.name[0].toUpperCase() : '?',
           nodeCenter - const Offset(0, 7),
-          color: color,
+          color: colors.text,
           fontSize: 13,
           fontWeight: FontWeight.bold,
         );
 
-        // Draw name below the node.
+        // Name below node
         _drawText(
           canvas,
           friend.name,
           Offset(nodeCenter.dx, nodeCenter.dy + 18),
-          color: Colors.black87,
+          color: CrayonColors.textSecondary,
           fontSize: 10,
         );
 
@@ -138,13 +133,15 @@ class RelationshipGraphPainter extends CustomPainter {
       }
     }
 
-    // Draw center "You" bubble.
-    canvas.drawCircle(center, 28, Paint()..color = Colors.indigo.withOpacity(0.12));
-    canvas.drawCircle(
-      center,
-      28,
+    // Center "You" bubble
+    canvas.drawPath(
+      _wobblyCirclePath(center, 28, seed: 99),
+      Paint()..color = CrayonColors.accentPurple.withAlpha(40),
+    );
+    canvas.drawPath(
+      _wobblyCirclePath(center, 28, seed: 99),
       Paint()
-        ..color = Colors.indigo.withOpacity(0.4)
+        ..color = CrayonColors.accentPurple.withAlpha(120)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.5,
     );
@@ -152,13 +149,36 @@ class RelationshipGraphPainter extends CustomPainter {
       canvas,
       userName.isNotEmpty ? userName.split(' ').first : 'You',
       center - const Offset(0, 7),
-      color: Colors.indigo,
+      color: CrayonColors.accentPurple.withAlpha(200),
       fontSize: 12,
       fontWeight: FontWeight.bold,
     );
   }
 
-  /// Returns the friend whose node contains [tapPosition], or null.
+  /// Builds a slightly wobbly circle path centered at [center] with radius [r].
+  Path _wobblyCirclePath(Offset center, double r, {int seed = 0}) {
+    final rng = Random(seed);
+    const steps = 24;
+    final path = Path();
+
+    for (int i = 0; i <= steps; i++) {
+      final angle = (i / steps) * 2 * pi;
+      final noise = (rng.nextDouble() - 0.5) * r * 0.07;
+      final rr = r + noise;
+      final pt = Offset(
+        center.dx + rr * cos(angle),
+        center.dy + rr * sin(angle),
+      );
+      if (i == 0) {
+        path.moveTo(pt.dx, pt.dy);
+      } else {
+        path.lineTo(pt.dx, pt.dy);
+      }
+    }
+    path.close();
+    return path;
+  }
+
   Friend? findFriendAt(Offset tapPosition) {
     for (final node in _nodes) {
       if ((tapPosition - node.center).distance <= 20) {
@@ -172,7 +192,7 @@ class RelationshipGraphPainter extends CustomPainter {
     Canvas canvas,
     String text,
     Offset topCenter, {
-    Color color = Colors.black87,
+    Color color = const Color(0xFF555555),
     double fontSize = 12,
     FontWeight fontWeight = FontWeight.normal,
     TextAlign align = TextAlign.center,
@@ -184,6 +204,7 @@ class RelationshipGraphPainter extends CustomPainter {
           color: color,
           fontSize: fontSize,
           fontWeight: fontWeight,
+          fontFamily: 'Caveat',
         ),
       ),
       textDirection: TextDirection.ltr,

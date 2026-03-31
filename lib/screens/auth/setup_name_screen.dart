@@ -4,7 +4,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
+import '../../theme/crayon_theme.dart';
 
 class SetupNameScreen extends StatefulWidget {
   const SetupNameScreen({super.key});
@@ -50,14 +52,21 @@ class _SetupNameScreenState extends State<SetupNameScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
+                Text(
                   'What should we call you?',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.caveat(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w700,
+                    color: CrayonColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'This is just for your own reference.',
-                  style: TextStyle(color: Colors.grey),
+                  style: GoogleFonts.caveat(
+                    color: CrayonColors.textSecondary,
+                    fontSize: 17,
+                  ),
                 ),
                 const SizedBox(height: 36),
                 TextFormField(
@@ -66,7 +75,6 @@ class _SetupNameScreenState extends State<SetupNameScreen> {
                   autofocus: true,
                   decoration: const InputDecoration(
                     labelText: 'Your name',
-                    border: OutlineInputBorder(),
                   ),
                   validator: (v) =>
                       v == null || v.trim().isEmpty ? 'Enter your name' : null,
@@ -74,7 +82,13 @@ class _SetupNameScreenState extends State<SetupNameScreen> {
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 12),
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
+                  Text(
+                    _error!,
+                    style: GoogleFonts.caveat(
+                      color: CrayonColors.scoreNegative2,
+                      fontSize: 16,
+                    ),
+                  ),
                 ],
                 const SizedBox(height: 24),
                 FilledButton(
@@ -82,7 +96,7 @@ class _SetupNameScreenState extends State<SetupNameScreen> {
                   child: _saving
                       ? const SizedBox(
                           height: 20, width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Text('Continue'),
                 ),

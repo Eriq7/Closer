@@ -5,7 +5,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../services/auth_service.dart';
+import '../../theme/crayon_theme.dart';
 
 class OtpScreen extends StatefulWidget {
   final String email;
@@ -77,14 +79,21 @@ class _OtpScreenState extends State<OtpScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Check your email',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                style: GoogleFonts.caveat(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  color: CrayonColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'We sent a 6-digit code to\n${widget.email}',
-                style: const TextStyle(color: Colors.grey, fontSize: 15),
+                style: GoogleFonts.caveat(
+                  color: CrayonColors.textSecondary,
+                  fontSize: 17,
+                ),
               ),
               const SizedBox(height: 36),
               TextField(
@@ -93,13 +102,21 @@ class _OtpScreenState extends State<OtpScreen> {
                 maxLength: 6,
                 autofocus: true,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 28, letterSpacing: 12, fontWeight: FontWeight.bold),
+                style: GoogleFonts.caveat(
+                  fontSize: 32,
+                  letterSpacing: 10,
+                  fontWeight: FontWeight.w700,
+                  color: CrayonColors.textPrimary,
+                ),
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   counterText: '',
-                  border: OutlineInputBorder(),
                   hintText: '------',
-                  hintStyle: TextStyle(letterSpacing: 12, color: Colors.grey),
+                  hintStyle: GoogleFonts.caveat(
+                    letterSpacing: 10,
+                    color: CrayonColors.textHint,
+                    fontSize: 32,
+                  ),
                 ),
                 onChanged: (v) {
                   if (v.length == 6) _verify();
@@ -107,7 +124,14 @@ class _OtpScreenState extends State<OtpScreen> {
               ),
               if (_error != null) ...[
                 const SizedBox(height: 12),
-                Text(_error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+                Text(
+                  _error!,
+                  style: GoogleFonts.caveat(
+                    color: CrayonColors.scoreNegative2,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ],
               const SizedBox(height: 24),
               FilledButton(
@@ -115,7 +139,7 @@ class _OtpScreenState extends State<OtpScreen> {
                 child: _loading
                     ? const SizedBox(
                         height: 20, width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Text('Verify'),
               ),

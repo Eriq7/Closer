@@ -6,12 +6,15 @@
 // Design: PeriodDividerTimelineEvents are synthetic — computed client-side, not stored in DB.
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../models/interaction.dart';
 import '../models/label_change.dart';
 import '../models/timeline_event.dart';
 import '../services/interaction_service.dart';
 import '../widgets/timeline_tile.dart';
+import '../theme/crayon_theme.dart';
+import '../theme/crayon_widgets.dart';
 
 class FriendTimelineScreen extends StatefulWidget {
   final String friendId;
@@ -151,10 +154,10 @@ class _FriendTimelineScreenState extends State<FriendTimelineScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _events.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
                     'No events yet.',
-                    style: TextStyle(color: Colors.grey),
+                    style: GoogleFonts.caveat(color: CrayonColors.textHint, fontSize: 18),
                   ),
                 )
               : CustomScrollView(
@@ -222,44 +225,46 @@ class _StatsHeader extends StatelessWidget {
     final lastDate = interactions.last.createdAt;
 
     final avgColor = avg > 0
-        ? const Color(0xFF2E7D32)
+        ? CrayonColors.activeLabelText
         : avg < 0
-            ? const Color(0xFFC62828)
-            : Colors.grey.shade600;
+            ? const Color(0xFF8B2A2A)
+            : CrayonColors.textSecondary;
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              _StatBox(label: 'Total', value: '$total'),
-              _StatBox(
-                label: 'Avg Score',
-                value:
-                    avg >= 0 ? '+${avg.toStringAsFixed(1)}' : avg.toStringAsFixed(1),
-                valueColor: avgColor,
-              ),
-              _StatBox(
-                label: 'Positive',
-                value: '$positivePct%',
-                valueColor: positivePct >= 50
-                    ? const Color(0xFF2E7D32)
-                    : Colors.grey.shade600,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Last interaction: ${DateFormat('MMM d, yyyy').format(lastDate.toLocal())}',
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: CrayonCard(
+        seed: 88,
+        fillColor: CrayonColors.surface,
+        strokeColor: CrayonColors.strokeLight,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                _StatBox(label: 'Total', value: '$total'),
+                _StatBox(
+                  label: 'Avg Score',
+                  value: avg >= 0
+                      ? '+${avg.toStringAsFixed(1)}'
+                      : avg.toStringAsFixed(1),
+                  valueColor: avgColor,
+                ),
+                _StatBox(
+                  label: 'Positive',
+                  value: '$positivePct%',
+                  valueColor: positivePct >= 50
+                      ? CrayonColors.activeLabelText
+                      : CrayonColors.textSecondary,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Last interaction: ${DateFormat('MMM d, yyyy').format(lastDate.toLocal())}',
+              style: GoogleFonts.caveat(fontSize: 13, color: CrayonColors.textHint),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -279,16 +284,16 @@ class _StatBox extends StatelessWidget {
         children: [
           Text(
             value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: valueColor ?? Colors.black87,
+            style: GoogleFonts.caveat(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: valueColor ?? CrayonColors.textPrimary,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(fontSize: 11, color: Colors.grey),
+            style: GoogleFonts.caveat(fontSize: 13, color: CrayonColors.textHint),
           ),
         ],
       ),
@@ -337,12 +342,20 @@ class _SparklinePainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    // Zero baseline.
+    // Zero baseline (dashed-style by drawing short segments).
     final zeroY = _toY(0, h);
     final baselinePaint = Paint()
-      ..color = Colors.grey.shade300
+      ..color = const Color(0xFFD4C5B0)
       ..strokeWidth = 1;
-    canvas.drawLine(Offset(_padH, zeroY), Offset(w - _padH, zeroY), baselinePaint);
+    double dashX = _padH;
+    while (dashX < w - _padH) {
+      canvas.drawLine(
+        Offset(dashX, zeroY),
+        Offset(dashX + 4, zeroY),
+        baselinePaint,
+      );
+      dashX += 8;
+    }
 
     // Compute canvas points.
     final points = _toPoints(w, h);
@@ -350,7 +363,7 @@ class _SparklinePainter extends CustomPainter {
     if (points.length > 1) {
       // Connecting polyline.
       final linePaint = Paint()
-        ..color = Colors.grey.shade400
+        ..color = const Color(0xFFB8A898)
         ..strokeWidth = 1.5
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
@@ -392,17 +405,27 @@ class _SparklinePainter extends CustomPainter {
   }
 
   void _drawDot(Canvas canvas, Offset center, int score) {
-    final color = score > 0
-        ? const Color(0xFF2E7D32)
+    final fillColor = score >= 2
+        ? const Color(0xFF7BC89B)
+        : score == 1
+            ? const Color(0xFFA9DFB8)
+            : score == 0
+                ? const Color(0xFFCCCCCC)
+                : score == -1
+                    ? const Color(0xFFF2C5C5)
+                    : const Color(0xFFE88B8B);
+    final strokeColor = score > 0
+        ? const Color(0xFF2E7D5A)
         : score < 0
-            ? const Color(0xFFC62828)
-            : Colors.grey;
-    canvas.drawCircle(center, _dotRadius, Paint()..color = color);
+            ? const Color(0xFF8B2A2A)
+            : const Color(0xFF888888);
+
+    canvas.drawCircle(center, _dotRadius, Paint()..color = fillColor);
     canvas.drawCircle(
       center,
       _dotRadius,
       Paint()
-        ..color = Colors.white
+        ..color = strokeColor.withAlpha(120)
         ..strokeWidth = 1.5
         ..style = PaintingStyle.stroke,
     );

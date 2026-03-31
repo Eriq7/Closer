@@ -4,7 +4,11 @@
 // Returns the written reason string if confirmed, or null if cancelled.
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../utils/constants.dart';
+import '../theme/crayon_theme.dart';
+import '../theme/crayon_widgets.dart';
 
 class LabelOverrideDialog extends StatefulWidget {
   final RelationshipLabel fromLabel;
@@ -57,25 +61,27 @@ class _LabelOverrideDialogState extends State<LabelOverrideDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.withOpacity(0.4)),
-              ),
+            CrayonCard(
+              fillColor: CrayonColors.warningOrange.withValues(alpha: 0.3),
+              strokeColor: CrayonColors.warningOrange,
+              seed: 42,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.warning_amber_rounded, color: Colors.orange, size: 18),
-                      SizedBox(width: 6),
+                      PhosphorIcon(
+                        PhosphorIconsThin.warning,
+                        color: CrayonColors.obligatoryLabelText,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 6),
                       Text(
                         'A note before you proceed',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange,
+                        style: GoogleFonts.caveat(
+                          fontWeight: FontWeight.w700,
+                          color: CrayonColors.obligatoryLabelText,
+                          fontSize: 16,
                         ),
                       ),
                     ],
@@ -86,7 +92,10 @@ class _LabelOverrideDialogState extends State<LabelOverrideDialog> {
                     '${widget.fromLabel.displayName} → ${widget.toLabel.displayName}. '
                     'For your own protection, following the system\'s logic '
                     'is usually better than acting on feelings in the moment.',
-                    style: const TextStyle(fontSize: 13, color: Colors.black87),
+                    style: GoogleFonts.caveat(
+                      fontSize: 15,
+                      color: CrayonColors.textPrimary,
+                    ),
                   ),
                 ],
               ),
@@ -95,17 +104,21 @@ class _LabelOverrideDialogState extends State<LabelOverrideDialog> {
             CheckboxListTile(
               value: _warningAcknowledged,
               onChanged: (v) => setState(() => _warningAcknowledged = v ?? false),
-              title: const Text(
+              title: Text(
                 'I understand and want to proceed anyway',
-                style: TextStyle(fontSize: 13),
+                style: GoogleFonts.caveat(fontSize: 15),
               ),
               controlAffinity: ListTileControlAffinity.leading,
               contentPadding: EdgeInsets.zero,
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               'Why do you want to change this label?',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: GoogleFonts.caveat(
+                fontWeight: FontWeight.w700,
+                fontSize: 16,
+                color: CrayonColors.textPrimary,
+              ),
             ),
             const SizedBox(height: 4),
             TextField(
@@ -115,7 +128,6 @@ class _LabelOverrideDialogState extends State<LabelOverrideDialog> {
               onChanged: (_) => setState(() {}),
               decoration: const InputDecoration(
                 hintText: 'Required — write your reason here...',
-                border: OutlineInputBorder(),
               ),
             ),
           ],

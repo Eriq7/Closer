@@ -1,15 +1,18 @@
 // timeline_tile.dart
 // Renders a single event in the per-friend timeline.
 // Draws a vertical connector line on the left and a colored dot.
-// InteractionTimelineEvent: green/grey/red dot with score + note.
-// LabelChangeTimelineEvent: indigo dot with from → to label transition.
-// PeriodDividerTile: full-width chapter header (rendered separately, not via TimelineTile).
+// Uses crayon storybook style: wobbly chips, pastel colors, hand-drawn lines.
 
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../models/timeline_event.dart';
 import '../utils/constants.dart';
 import '../widgets/label_badge.dart';
+import '../theme/crayon_theme.dart';
+import '../theme/crayon_widgets.dart';
 
 class TimelineTile extends StatelessWidget {
   final TimelineEvent event;
@@ -34,39 +37,38 @@ class TimelineTile extends StatelessWidget {
             width: 40,
             child: Column(
               children: [
-                // Top line (hidden for first item)
+                // Top line
                 Expanded(
                   child: Center(
-                    child: Container(
-                      width: 2,
-                      color: isFirst ? Colors.transparent : Colors.grey.shade300,
-                    ),
+                    child: isFirst
+                        ? const SizedBox(width: 2)
+                        : CustomPaint(
+                            painter: _WobblyLinePainter(
+                              color: CrayonColors.strokeLight,
+                            ),
+                            size: const Size(2, double.infinity),
+                          ),
                   ),
                 ),
                 // Dot
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _dotColor,
-                    border: Border.all(color: Colors.white, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _dotColor.withOpacity(0.3),
-                        blurRadius: 4,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
+                CrayonCircle(
+                  fillColor: _dotFill,
+                  strokeColor: _dotFill.withValues(alpha: 0.7),
+                  size: 14,
+                  seed: event.hashCode & 0xFF,
+                  child: const SizedBox.shrink(),
                 ),
-                // Bottom line (hidden for last item)
+                // Bottom line
                 Expanded(
                   child: Center(
-                    child: Container(
-                      width: 2,
-                      color: isLast ? Colors.transparent : Colors.grey.shade300,
-                    ),
+                    child: isLast
+                        ? const SizedBox(width: 2)
+                        : CustomPaint(
+                            painter: _WobblyLinePainter(
+                              color: CrayonColors.strokeLight,
+                            ),
+                            size: const Size(2, double.infinity),
+                          ),
                   ),
                 ),
               ],
@@ -80,7 +82,7 @@ class TimelineTile extends StatelessWidget {
               child: switch (event) {
                 InteractionTimelineEvent e => _InteractionContent(event: e),
                 LabelChangeTimelineEvent e => _LabelChangeContent(event: e),
-                PeriodDividerTimelineEvent _ => const SizedBox.shrink(), // never rendered here
+                PeriodDividerTimelineEvent _ => const SizedBox.shrink(),
               },
             ),
           ),
@@ -89,50 +91,77 @@ class TimelineTile extends StatelessWidget {
     );
   }
 
-  Color get _dotColor {
+  Color get _dotFill {
     return switch (event) {
       InteractionTimelineEvent e => e.interaction.score > 0
-          ? const Color(0xFF2E7D32)
+          ? CrayonColors.scorePositive1
           : e.interaction.score < 0
-              ? const Color(0xFFC62828)
-              : Colors.grey,
-      LabelChangeTimelineEvent _ => Colors.indigo,
-      PeriodDividerTimelineEvent _ => Colors.transparent, // never rendered via TimelineTile
+              ? CrayonColors.scoreNegative1
+              : CrayonColors.scoreNeutral,
+      LabelChangeTimelineEvent _ => CrayonColors.accentPurple,
+      PeriodDividerTimelineEvent _ => Colors.transparent,
     };
   }
+}
+
+/// Simple wavy vertical line painter for the timeline connector.
+class _WobblyLinePainter extends CustomPainter {
+  final Color color;
+  const _WobblyLinePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.height < 1) return;
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1.5
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    final path = Path();
+    const steps = 8;
+    final stepH = size.height / steps;
+    path.moveTo(size.width / 2, 0);
+
+    for (int i = 1; i <= steps; i++) {
+      final x = size.width / 2 + math.sin(i * 1.8) * 1.2;
+      final y = stepH * i;
+      path.lineTo(x, y);
+    }
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_WobblyLinePainter old) => old.color != color;
 }
 
 class _InteractionContent extends StatelessWidget {
   final InteractionTimelineEvent event;
   const _InteractionContent({required this.event});
 
-  Color get _scoreColor {
-    final s = event.interaction.score;
-    if (s > 0) return const Color(0xFF2E7D32);
-    if (s < 0) return const Color(0xFFC62828);
-    return Colors.grey;
-  }
-
   @override
   Widget build(BuildContext context) {
     final i = event.interaction;
+    final fill = scoreFillColor(i.score);
+    final textCol = scoreTextColor(i.score);
+    final label = i.score > 0 ? '+${i.score}' : '${i.score}';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Container(
+            CrayonChip(
+              fillColor: fill.withValues(alpha: 0.3),
+              strokeColor: fill,
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: _scoreColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
+              seed: i.score + 50,
               child: Text(
-                i.score > 0 ? '+${i.score}' : '${i.score}',
-                style: TextStyle(
-                  color: _scoreColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
+                label,
+                style: GoogleFonts.caveat(
+                  color: textCol,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 14,
                 ),
               ),
             ),
@@ -140,7 +169,10 @@ class _InteractionContent extends StatelessWidget {
             Expanded(
               child: Text(
                 scoreDescriptions[i.score] ?? '',
-                style: const TextStyle(fontSize: 13),
+                style: GoogleFonts.caveat(
+                  fontSize: 15,
+                  color: CrayonColors.textPrimary,
+                ),
               ),
             ),
           ],
@@ -149,13 +181,17 @@ class _InteractionContent extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             i.note!,
-            style: const TextStyle(fontSize: 12, color: Colors.black54),
+            style: GoogleFonts.caveat(
+              fontSize: 14,
+              color: CrayonColors.textSecondary,
+              fontStyle: FontStyle.italic,
+            ),
           ),
         ],
         const SizedBox(height: 4),
         Text(
           DateFormat('MMM d, yyyy').format(i.createdAt.toLocal()),
-          style: const TextStyle(fontSize: 11, color: Colors.grey),
+          style: GoogleFonts.caveat(fontSize: 13, color: CrayonColors.textHint),
         ),
       ],
     );
@@ -175,21 +211,27 @@ class _LabelChangeContent extends StatelessWidget {
         Row(
           children: [
             LabelBadge(label: c.fromLabel, small: true),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 6),
-              child: Icon(Icons.arrow_forward, size: 14, color: Colors.grey),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: PhosphorIcon(
+                PhosphorIconsThin.arrowRight,
+                size: 14,
+                color: CrayonColors.textSecondary,
+              ),
             ),
             LabelBadge(label: c.toLabel, small: true),
             const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: BoxDecoration(
-                color: Colors.indigo.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(8),
-              ),
+            CrayonChip(
+              fillColor: CrayonColors.accentPurple.withValues(alpha: 0.15),
+              strokeColor: CrayonColors.accentPurple.withValues(alpha: 0.4),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              seed: 77,
               child: Text(
                 c.triggeredBy.name == 'manual' ? 'Manual' : 'System',
-                style: const TextStyle(fontSize: 10, color: Colors.indigo),
+                style: GoogleFonts.caveat(
+                  fontSize: 12,
+                  color: CrayonColors.accentPurple.withValues(alpha: 0.8),
+                ),
               ),
             ),
           ],
@@ -198,16 +240,17 @@ class _LabelChangeContent extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '"${c.reason}"',
-            style: const TextStyle(
-                fontSize: 12,
-                fontStyle: FontStyle.italic,
-                color: Colors.black54),
+            style: GoogleFonts.caveat(
+              fontSize: 14,
+              fontStyle: FontStyle.italic,
+              color: CrayonColors.textSecondary,
+            ),
           ),
         ],
         const SizedBox(height: 4),
         Text(
           DateFormat('MMM d, yyyy').format(c.createdAt.toLocal()),
-          style: const TextStyle(fontSize: 11, color: Colors.grey),
+          style: GoogleFonts.caveat(fontSize: 13, color: CrayonColors.textHint),
         ),
       ],
     );
@@ -215,7 +258,6 @@ class _LabelChangeContent extends StatelessWidget {
 }
 
 /// Full-width chapter divider shown between label-change periods.
-/// Displays the label name as a styled chip with date range and interaction stats.
 class PeriodDividerTile extends StatelessWidget {
   final PeriodDividerTimelineEvent event;
 
@@ -235,10 +277,10 @@ class PeriodDividerTile extends StatelessWidget {
         ? '+${avg.toStringAsFixed(1)}'
         : avg.toStringAsFixed(1);
     final avgColor = avg > 0
-        ? const Color(0xFF2E7D32)
+        ? CrayonColors.activeLabelText
         : avg < 0
-            ? const Color(0xFFC62828)
-            : Colors.grey;
+            ? Color(0xFF8B2A2A)
+            : CrayonColors.textSecondary;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -246,24 +288,30 @@ class PeriodDividerTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: Divider(color: Colors.grey.shade300)),
+              Expanded(child: Divider(color: CrayonColors.strokeLight)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: LabelBadge(label: event.label),
               ),
-              Expanded(child: Divider(color: Colors.grey.shade300)),
+              Expanded(child: Divider(color: CrayonColors.strokeLight)),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             dateRange,
-            style: const TextStyle(fontSize: 11, color: Colors.grey),
+            style: GoogleFonts.caveat(
+              fontSize: 13,
+              color: CrayonColors.textHint,
+            ),
           ),
           if (event.interactionCount > 0) ...[
             const SizedBox(height: 2),
             RichText(
               text: TextSpan(
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                style: GoogleFonts.caveat(
+                  fontSize: 13,
+                  color: CrayonColors.textHint,
+                ),
                 children: [
                   TextSpan(
                     text:
@@ -272,7 +320,9 @@ class PeriodDividerTile extends StatelessWidget {
                   TextSpan(
                     text: avgText,
                     style: TextStyle(
-                        color: avgColor, fontWeight: FontWeight.w600),
+                      color: avgColor,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),

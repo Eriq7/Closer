@@ -4,10 +4,12 @@
 // Cut-off on the outermost. Tap a friend dot to navigate to their detail page.
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/friend.dart';
 import '../services/friend_service.dart';
 import '../widgets/relationship_graph_painter.dart';
+import '../theme/crayon_theme.dart';
 import 'friend_detail_screen.dart';
 
 class VisualizationScreen extends StatefulWidget {
@@ -20,7 +22,6 @@ class VisualizationScreen extends StatefulWidget {
 class _VisualizationScreenState extends State<VisualizationScreen> {
   final _friendService = FriendService();
   List<Friend> _friends = [];
-  String _userName = '';
   bool _loading = true;
   RelationshipGraphPainter? _painter;
 
@@ -46,7 +47,6 @@ class _VisualizationScreenState extends State<VisualizationScreen> {
       }
       setState(() {
         _friends = friends;
-        _userName = name;
         _painter = RelationshipGraphPainter(friends: friends, userName: name);
       });
     } finally {
@@ -74,10 +74,13 @@ class _VisualizationScreenState extends State<VisualizationScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _friends.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
                     'Add some friends to see them here.',
-                    style: TextStyle(color: Colors.grey),
+                    style: GoogleFonts.caveat(
+                      color: CrayonColors.textHint,
+                      fontSize: 18,
+                    ),
                   ),
                 )
               : RefreshIndicator(

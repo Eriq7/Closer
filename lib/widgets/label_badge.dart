@@ -1,16 +1,12 @@
 // label_badge.dart
 // Colored chip/badge that displays a relationship label.
-// Each label has a distinct color to make them easy to scan.
+// Now uses CrayonChip for a hand-drawn sticker look.
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../utils/constants.dart';
-
-const Map<RelationshipLabel, Color> labelColors = {
-  RelationshipLabel.active: Color(0xFF2E7D32),      // dark green
-  RelationshipLabel.responsive: Color(0xFF1565C0),   // dark blue
-  RelationshipLabel.obligatory: Color(0xFFE65100),   // dark orange
-  RelationshipLabel.cutOff: Color(0xFF616161),        // grey
-};
+import '../theme/crayon_theme.dart';
+import '../theme/crayon_widgets.dart';
 
 class LabelBadge extends StatelessWidget {
   final RelationshipLabel label;
@@ -20,23 +16,23 @@ class LabelBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = labelColors[label]!;
-    return Container(
+    final colors = labelCrayonColors(label);
+    final seed = label.index * 17 + 5; // stable deterministic seed per label
+
+    return CrayonChip(
+      fillColor: colors.fill,
+      strokeColor: colors.border,
       padding: EdgeInsets.symmetric(
         horizontal: small ? 8 : 10,
-        vertical: small ? 2 : 4,
+        vertical: small ? 3 : 5,
       ),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        border: Border.all(color: color.withOpacity(0.4)),
-        borderRadius: BorderRadius.circular(20),
-      ),
+      seed: seed,
       child: Text(
         label.displayName,
-        style: TextStyle(
-          color: color,
-          fontSize: small ? 11 : 12,
-          fontWeight: FontWeight.w600,
+        style: GoogleFonts.caveat(
+          color: colors.text,
+          fontSize: small ? 13 : 15,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );
