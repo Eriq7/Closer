@@ -10,6 +10,7 @@ import 'screens/auth/email_screen.dart';
 import 'screens/auth/otp_screen.dart';
 import 'screens/auth/setup_name_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/why_it_works_screen.dart';
 import 'services/notification_service.dart';
 import 'theme/crayon_theme.dart';
 import 'theme/crayon_widgets.dart';
@@ -50,6 +51,7 @@ final _router = GoRouter(
     ),
     GoRoute(path: '/setup-name', builder: (_, __) => const SetupNameScreen()),
     GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
+    GoRoute(path: '/why-it-works', builder: (_, __) => const WhyItWorksScreen()),
   ],
 );
 

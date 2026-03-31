@@ -17,6 +17,7 @@ import '../theme/crayon_widgets.dart';
 import 'add_friend_screen.dart';
 import 'friend_detail_screen.dart';
 import 'visualization_screen.dart';
+import 'why_it_works_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -67,7 +68,40 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Closer'),
+        title: GestureDetector(
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const WhyItWorksScreen()),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Closer',
+                  style: GoogleFonts.caveat(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    color: CrayonColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                PhosphorIcon(PhosphorIconsThin.arrowRight,
+                    size: 14, color: CrayonColors.responsiveLabelText),
+                const SizedBox(width: 4),
+                Text(
+                  'Why it works',
+                  style: GoogleFonts.caveat(
+                    fontSize: 13,
+                    color: CrayonColors.responsiveLabelText,
+                    decoration: TextDecoration.underline,
+                    decorationColor: CrayonColors.responsiveLabelText,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
         actions: [
           IconButton(
             icon: PhosphorIcon(PhosphorIconsThin.graph,
