@@ -279,19 +279,6 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
       appBar: AppBar(
         title: Text(_friend?.name ?? widget.friendName ?? ''),
         actions: [
-          IconButton(
-            icon: PhosphorIcon(PhosphorIconsThin.chartLine,
-                size: 22, color: CrayonColors.textPrimary),
-            tooltip: 'Timeline',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => FriendTimelineScreen(
-                  friendId: widget.friendId,
-                  friendName: _friend!.name,
-                ),
-              ),
-            ),
-          ),
           PopupMenuButton<String>(
             onSelected: (v) {
               if (v == 'change_label') _manualLabelChange();
@@ -354,6 +341,42 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
                 ),
                 LabelBadge(label: _friend!.label),
               ],
+            ),
+            const SizedBox(height: 12),
+            GestureDetector(
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => FriendTimelineScreen(
+                    friendId: widget.friendId,
+                    friendName: _friend!.name,
+                  ),
+                ),
+              ),
+              child: CrayonCard(
+                seed: 88,
+                fillColor: CrayonColors.surfaceAlt,
+                strokeColor: CrayonColors.strokeLight,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                child: Row(
+                  children: [
+                    PhosphorIcon(PhosphorIconsThin.chartLine,
+                        size: 18, color: CrayonColors.textSecondary),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'View Timeline & Stats',
+                        style: GoogleFonts.caveat(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: CrayonColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                    PhosphorIcon(PhosphorIconsThin.arrowRight,
+                        size: 14, color: CrayonColors.textHint),
+                  ],
+                ),
+              ),
             ),
             const SizedBox(height: 20),
 
