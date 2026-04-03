@@ -6,12 +6,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../models/friend.dart';
+import '../models/interaction.dart';
 import '../services/friend_service.dart';
 import '../services/interaction_service.dart';
+import '../utils/constants.dart';
 import '../widgets/label_trigger_handler.dart';
 import '../widgets/score_picker.dart';
 import '../theme/crayon_theme.dart';
+import '../theme/crayon_widgets.dart';
 
 class AddInteractionScreen extends StatefulWidget {
   final Friend friend;
@@ -28,6 +32,24 @@ class _AddInteractionScreenState extends State<AddInteractionScreen> {
   final _interactionService = InteractionService();
   final _friendService = FriendService();
   bool _saving = false;
+  List<Interaction> _recentInteractions = [];
+  bool _historyLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    final all = await _interactionService.getInteractionsForFriend(widget.friend.id);
+    if (mounted) {
+      setState(() {
+        _recentInteractions = all.take(3).toList();
+        _historyLoaded = true;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -104,7 +126,85 @@ class _AddInteractionScreenState extends State<AddInteractionScreen> {
                 hintText: 'Write a note, or leave blank...',
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 20),
+            if (_historyLoaded && _recentInteractions.isEmpty)
+              CrayonCard(
+                seed: 77,
+                fillColor: CrayonColors.surfaceAlt,
+                strokeColor: CrayonColors.strokeLight,
+                padding: const EdgeInsets.all(14),
+                child: Text(
+                  'This is your first interaction with ${widget.friend.name}!',
+                  style: GoogleFonts.caveat(
+                    fontSize: 18,
+                    color: CrayonColors.textSecondary,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            if (_historyLoaded && _recentInteractions.isNotEmpty) ...[
+              Text(
+                'Recent',
+                style: GoogleFonts.caveat(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: CrayonColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ..._recentInteractions.asMap().entries.map((e) {
+                final i = e.value;
+                final idx = e.key;
+                final fill = scoreFillColor(i.score);
+                final textCol = scoreTextColor(i.score);
+                final label = i.score > 0 ? '+${i.score}' : '${i.score}';
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: CrayonCard(
+                    seed: idx * 13 + 44,
+                    fillColor: CrayonColors.surface,
+                    strokeColor: CrayonColors.strokeLight,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        CrayonCircle(
+                          fillColor: fill.withAlpha(80),
+                          strokeColor: fill,
+                          size: 34,
+                          seed: i.score + 30,
+                          child: Text(
+                            label,
+                            style: GoogleFonts.caveat(
+                              color: textCol,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            scoreDescriptions[i.score] ?? '',
+                            style: GoogleFonts.caveat(
+                              fontSize: 16,
+                              color: CrayonColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          DateFormat('MMM d').format(i.createdAt.toLocal()),
+                          style: GoogleFonts.caveat(
+                            fontSize: 14,
+                            color: CrayonColors.textHint,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+            const SizedBox(height: 16),
             FilledButton(
               onPressed: _saving ? null : _save,
               child: _saving

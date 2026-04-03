@@ -167,34 +167,124 @@ class _HomeScreenState extends State<HomeScreen> {
           : RefreshIndicator(
               onRefresh: _load,
               child: _filtered.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          PhosphorIcon(
-                            PhosphorIconsThin.users,
-                            size: 64,
-                            color: CrayonColors.textHint,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            _filter == null
-                                ? 'No people yet.\nTap + to add someone.'
-                                : 'No ${_filter!.displayName} contacts.',
+                  ? _filter != null
+                      ? Center(
+                          child: Text(
+                            'No ${_filter!.displayName} contacts.',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.caveat(
                               color: CrayonColors.textHint,
                               fontSize: 19,
                             ),
                           ),
-                        ],
-                      ),
-                    )
+                        )
+                      : SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(
+                                'Get started in 3 steps',
+                                style: GoogleFonts.caveat(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w700,
+                                  color: CrayonColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              _OnboardingStep(
+                                number: '1',
+                                text: 'Add a person you care about',
+                              ),
+                              const SizedBox(height: 10),
+                              _OnboardingStep(
+                                number: '2',
+                                text: 'Log interactions and how they felt',
+                              ),
+                              const SizedBox(height: 10),
+                              _OnboardingStep(
+                                number: '3',
+                                text: 'Watch your relationship patterns emerge',
+                              ),
+                              const SizedBox(height: 28),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.asset(
+                                  'assets/images/peak_end_rule.png',
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Based on the Peak-End Rule — people remember how an experience ended, not the average.',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.caveat(
+                                  fontSize: 16,
+                                  color: CrayonColors.textSecondary,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+                              CrayonButton(
+                                label: 'Add your first person',
+                                icon: PhosphorIconsThin.userPlus,
+                                seed: 42,
+                                onPressed: () async {
+                                  final added = await Navigator.of(context).push<bool>(
+                                    MaterialPageRoute(
+                                        builder: (_) => const AddFriendScreen()),
+                                  );
+                                  if (added == true) _load();
+                                },
+                              ),
+                            ],
+                          ),
+                        )
                   : ListView.separated(
                       padding: const EdgeInsets.all(16),
-                      itemCount: _filtered.length,
+                      itemCount: _filtered.length + 1,
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
+                        if (index == _filtered.length) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8, bottom: 8),
+                            child: GestureDetector(
+                              onTap: () => Navigator.of(context)
+                                  .push(MaterialPageRoute(
+                                      builder: (_) => const VisualizationScreen()))
+                                  .then((_) => _load()),
+                              child: CrayonCard(
+                                seed: 101,
+                                fillColor: CrayonColors.surfaceAlt,
+                                strokeColor: CrayonColors.strokeLight,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                                child: Row(
+                                  children: [
+                                    PhosphorIcon(PhosphorIconsThin.graph,
+                                        size: 20,
+                                        color: CrayonColors.textSecondary),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        'View Relationship Map',
+                                        style: GoogleFonts.caveat(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: CrayonColors.textSecondary,
+                                        ),
+                                      ),
+                                    ),
+                                    PhosphorIcon(PhosphorIconsThin.arrowRight,
+                                        size: 16,
+                                        color: CrayonColors.textHint),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }
                         final friend = _filtered[index];
                         return _FriendCard(
                           friend: friend,
@@ -212,6 +302,49 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
             ),
+    );
+  }
+}
+
+class _OnboardingStep extends StatelessWidget {
+  final String number;
+  final String text;
+
+  const _OnboardingStep({required this.number, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CrayonCircle(
+          fillColor: CrayonColors.accentPurple.withAlpha(60),
+          strokeColor: CrayonColors.accentPurple,
+          size: 32,
+          seed: number.hashCode & 0xFF,
+          child: Text(
+            number,
+            style: GoogleFonts.caveat(
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+              color: CrayonColors.textPrimary,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              text,
+              style: GoogleFonts.caveat(
+                fontSize: 18,
+                color: CrayonColors.textPrimary,
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
