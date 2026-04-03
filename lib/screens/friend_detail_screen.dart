@@ -279,19 +279,6 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
       appBar: AppBar(
         title: Text(_friend?.name ?? widget.friendName ?? ''),
         actions: [
-          IconButton(
-            icon: PhosphorIcon(PhosphorIconsThin.chartLine,
-                size: 22, color: CrayonColors.textPrimary),
-            tooltip: 'Timeline',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => FriendTimelineScreen(
-                  friendId: widget.friendId,
-                  friendName: _friend!.name,
-                ),
-              ),
-            ),
-          ),
           PopupMenuButton<String>(
             onSelected: (v) {
               if (v == 'change_label') _manualLabelChange();

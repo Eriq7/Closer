@@ -32,6 +32,7 @@ class _AddInteractionScreenState extends State<AddInteractionScreen> {
   final _interactionService = InteractionService();
   final _friendService = FriendService();
   bool _saving = false;
+  DateTime _interactionDate = DateTime.now();
   List<Interaction> _recentInteractions = [];
   bool _historyLoaded = false;
 
@@ -57,6 +58,11 @@ class _AddInteractionScreenState extends State<AddInteractionScreen> {
     super.dispose();
   }
 
+  bool _isToday(DateTime date) {
+    final now = DateTime.now();
+    return date.year == now.year && date.month == now.month && date.day == now.day;
+  }
+
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
@@ -67,6 +73,7 @@ class _AddInteractionScreenState extends State<AddInteractionScreen> {
         currentLabel: widget.friend.label,
         contactFrequency: widget.friend.contactFrequency,
         windowAnchorAt: widget.friend.windowAnchorAt,
+        interactionDate: _interactionDate,
       );
 
       if (!mounted) return;
@@ -117,7 +124,60 @@ class _AddInteractionScreenState extends State<AddInteractionScreen> {
               selectedScore: _score,
               onChanged: (s) => setState(() => _score = s),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 20),
+            GestureDetector(
+              onTap: () async {
+                final now = DateTime.now();
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _interactionDate,
+                  firstDate: DateTime(now.year - 5),
+                  lastDate: now,
+                  builder: (context, child) => Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: ColorScheme.light(
+                        primary: CrayonColors.accentPurple,
+                        onPrimary: CrayonColors.textPrimary,
+                        surface: CrayonColors.background,
+                        onSurface: CrayonColors.textPrimary,
+                      ),
+                    ),
+                    child: child!,
+                  ),
+                );
+                if (picked != null) setState(() => _interactionDate = picked);
+              },
+              child: CrayonCard(
+                seed: 55,
+                fillColor: CrayonColors.surface,
+                strokeColor: CrayonColors.strokeLight,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                child: Row(
+                  children: [
+                    const Icon(Icons.calendar_today_outlined,
+                        size: 18, color: CrayonColors.textSecondary),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'When? ${DateFormat('MMM d, yyyy').format(_interactionDate)}',
+                        style: GoogleFonts.caveat(
+                          fontSize: 18,
+                          color: CrayonColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      _isToday(_interactionDate) ? 'Today' : '',
+                      style: GoogleFonts.caveat(
+                        fontSize: 15,
+                        color: CrayonColors.textHint,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _noteController,
               maxLines: 3,

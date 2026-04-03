@@ -35,6 +35,7 @@ class InteractionService {
     required RelationshipLabel currentLabel,
     required ContactFrequency contactFrequency,
     DateTime? windowAnchorAt,
+    DateTime? interactionDate,
   }) async {
     final userId = _client.auth.currentUser!.id;
 
@@ -43,6 +44,7 @@ class InteractionService {
       'user_id': userId,
       'score': score,
       if (note != null && note.isNotEmpty) 'note': note,
+      if (interactionDate != null) 'created_at': interactionDate.toUtc().toIso8601String(),
     }).select().single();
 
     final interaction = Interaction.fromMap(data);

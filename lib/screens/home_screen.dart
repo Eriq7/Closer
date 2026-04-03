@@ -104,15 +104,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: PhosphorIcon(PhosphorIconsThin.graph,
-                size: 22, color: CrayonColors.textPrimary),
-            tooltip: 'Relationship Map',
-            onPressed: () => Navigator.of(context)
-                .push(MaterialPageRoute(
-                    builder: (_) => const VisualizationScreen()))
-                .then((_) => _load()),
-          ),
-          IconButton(
             icon: PhosphorIcon(PhosphorIconsThin.signOut,
                 size: 22, color: CrayonColors.textPrimary),
             onPressed: () async {
@@ -246,9 +237,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: _filtered.length + 1,
                       separatorBuilder: (_, __) => const SizedBox(height: 8),
                       itemBuilder: (context, index) {
-                        if (index == _filtered.length) {
+                        if (index == 0) {
                           return Padding(
-                            padding: const EdgeInsets.only(top: 8, bottom: 8),
+                            padding: const EdgeInsets.only(bottom: 4),
                             child: GestureDetector(
                               onTap: () => Navigator.of(context)
                                   .push(MaterialPageRoute(
@@ -285,10 +276,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         }
-                        final friend = _filtered[index];
+                        final friend = _filtered[index - 1];
                         return _FriendCard(
                           friend: friend,
-                          index: index,
+                          index: index - 1,
                           onTap: () async {
                             await Navigator.of(context).push(
                               MaterialPageRoute(
