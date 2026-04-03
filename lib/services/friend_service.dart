@@ -16,6 +16,15 @@ class FriendService {
     return (data as List).map((e) => Friend.fromMap(e)).toList();
   }
 
+  Future<Friend> getFriendById(String id) async {
+    final data = await _client
+        .from('friends')
+        .select()
+        .eq('id', id)
+        .single();
+    return Friend.fromMap(data);
+  }
+
   Future<Friend> addFriend({
     required String name,
     required RelationshipLabel label,

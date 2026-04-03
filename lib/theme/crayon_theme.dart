@@ -118,7 +118,7 @@ ThemeData buildCrayonTheme() {
     useMaterial3: true,
     colorScheme: colorScheme,
     textTheme: textTheme,
-    scaffoldBackgroundColor: Colors.transparent,
+    scaffoldBackgroundColor: CrayonColors.background,
     appBarTheme: AppBarTheme(
       backgroundColor: Colors.transparent,
       elevation: 0,
