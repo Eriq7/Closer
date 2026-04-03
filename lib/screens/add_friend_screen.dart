@@ -9,6 +9,7 @@ import '../services/friend_service.dart';
 import '../utils/constants.dart';
 import '../widgets/label_badge.dart';
 import '../theme/crayon_theme.dart';
+import 'add_interaction_screen.dart';
 
 class AddFriendScreen extends StatefulWidget {
   const AddFriendScreen({super.key});
@@ -35,12 +36,19 @@ class _AddFriendScreenState extends State<AddFriendScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
     try {
-      await _friendService.addFriend(
+      final newFriend = await _friendService.addFriend(
         name: _nameController.text.trim(),
         label: _selectedLabel,
         contactFrequency: _selectedFrequency,
       );
-      if (mounted) context.pop(true);
+      if (mounted) {
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => AddInteractionScreen(friend: newFriend),
+          ),
+        );
+        if (mounted) context.pop(true);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
