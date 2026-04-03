@@ -24,8 +24,9 @@ import 'friend_timeline_screen.dart';
 
 class FriendDetailScreen extends StatefulWidget {
   final String friendId;
+  final String? friendName;
 
-  const FriendDetailScreen({super.key, required this.friendId});
+  const FriendDetailScreen({super.key, required this.friendId, this.friendName});
 
   @override
   State<FriendDetailScreen> createState() => _FriendDetailScreenState();
@@ -50,12 +51,14 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
-      final friends = await _friendService.getFriends();
-      _friend = friends.firstWhere((f) => f.id == widget.friendId);
-      _interactions =
-          await _interactionService.getInteractionsForFriend(widget.friendId);
-      _labelChanges =
-          await _interactionService.getLabelChangesForFriend(widget.friendId);
+      final results = await Future.wait([
+        _friendService.getFriendById(widget.friendId),
+        _interactionService.getInteractionsForFriend(widget.friendId),
+        _interactionService.getLabelChangesForFriend(widget.friendId),
+      ]);
+      _friend = results[0] as Friend;
+      _interactions = results[1] as List<Interaction>;
+      _labelChanges = results[2] as List<LabelChange>;
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -268,16 +271,13 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (_friend == null) {
+    if (_friend == null && !_loading) {
       return const Scaffold(body: Center(child: Text('Not found')));
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_friend!.name),
+        title: Text(_friend?.name ?? widget.friendName ?? ''),
         actions: [
           IconButton(
             icon: PhosphorIcon(PhosphorIconsThin.chartLine,
@@ -318,21 +318,25 @@ class _FriendDetailScreenState extends State<FriendDetailScreen> {
           ),
         ],
       ),
-      floatingActionButton: CrayonButton(
-        label: 'Log Interaction',
-        icon: PhosphorIconsThin.plus,
-        backgroundColor: CrayonColors.accentPurple,
-        seed: 55,
-        onPressed: () async {
-          final updated = await Navigator.of(context).push<bool>(
-            MaterialPageRoute(
-              builder: (_) => AddInteractionScreen(friend: _friend!),
+      floatingActionButton: _loading || _friend == null
+          ? null
+          : CrayonButton(
+              label: 'Log Interaction',
+              icon: PhosphorIconsThin.plus,
+              backgroundColor: CrayonColors.accentPurple,
+              seed: 55,
+              onPressed: () async {
+                final updated = await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(
+                    builder: (_) => AddInteractionScreen(friend: _friend!),
+                  ),
+                );
+                if (updated == true) _load();
+              },
             ),
-          );
-          if (updated == true) _load();
-        },
-      ),
-      body: RefreshIndicator(
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
         onRefresh: _load,
         child: ListView(
           padding: const EdgeInsets.all(16),

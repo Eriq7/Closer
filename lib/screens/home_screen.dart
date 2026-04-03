@@ -203,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             await Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (_) =>
-                                    FriendDetailScreen(friendId: friend.id),
+                                    FriendDetailScreen(friendId: friend.id, friendName: friend.name),
                               ),
                             );
                             _load();

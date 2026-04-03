@@ -60,7 +60,7 @@ class _VisualizationScreenState extends State<VisualizationScreen> {
       Navigator.of(context)
           .push(
             MaterialPageRoute(
-              builder: (_) => FriendDetailScreen(friendId: friend.id),
+              builder: (_) => FriendDetailScreen(friendId: friend.id, friendName: friend.name),
             ),
           )
           .then((_) => _load());
