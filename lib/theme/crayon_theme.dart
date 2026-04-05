@@ -76,28 +76,35 @@ Color scoreTextColor(int score) {
 }
 
 // ─── ThemeData Builder ──────────────────────────────────────────────────────
+
+// Chinese system font fallback — ensures Chinese characters and punctuation
+// render with correct baseline/metrics instead of floating mid-line.
+const _chineseFallback = ['PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans SC'];
+
 ThemeData buildCrayonTheme() {
   final base = GoogleFonts.caveatTextTheme(
     ThemeData.light().textTheme,
   );
 
   // Bump up sizes slightly – Caveat is a display font and reads well larger.
+  // fontFamilyFallback added globally so Chinese text renders with correct
+  // punctuation baseline across all Text widgets and TextFields.
   final textTheme = base.copyWith(
-    displayLarge:  base.displayLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 57),
-    displayMedium: base.displayMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 45),
-    displaySmall:  base.displaySmall?.copyWith(color: CrayonColors.textPrimary, fontSize: 36),
-    headlineLarge: base.headlineLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 34),
-    headlineMedium:base.headlineMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 28),
-    headlineSmall: base.headlineSmall?.copyWith(color: CrayonColors.textPrimary, fontSize: 25),
-    titleLarge:    base.titleLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 25, fontWeight: FontWeight.w700),
-    titleMedium:   base.titleMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 21),
-    titleSmall:    base.titleSmall?.copyWith(color: CrayonColors.textPrimary, fontSize: 18),
-    bodyLarge:     base.bodyLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 19),
-    bodyMedium:    base.bodyMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 17),
-    bodySmall:     base.bodySmall?.copyWith(color: CrayonColors.textSecondary, fontSize: 16),
-    labelLarge:    base.labelLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 18),
-    labelMedium:   base.labelMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 16),
-    labelSmall:    base.labelSmall?.copyWith(color: CrayonColors.textSecondary, fontSize: 15),
+    displayLarge:  base.displayLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 57, fontFamilyFallback: _chineseFallback),
+    displayMedium: base.displayMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 45, fontFamilyFallback: _chineseFallback),
+    displaySmall:  base.displaySmall?.copyWith(color: CrayonColors.textPrimary, fontSize: 36, fontFamilyFallback: _chineseFallback),
+    headlineLarge: base.headlineLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 34, fontFamilyFallback: _chineseFallback),
+    headlineMedium:base.headlineMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 28, fontFamilyFallback: _chineseFallback),
+    headlineSmall: base.headlineSmall?.copyWith(color: CrayonColors.textPrimary, fontSize: 25, fontFamilyFallback: _chineseFallback),
+    titleLarge:    base.titleLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 25, fontWeight: FontWeight.w700, fontFamilyFallback: _chineseFallback),
+    titleMedium:   base.titleMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 21, fontFamilyFallback: _chineseFallback),
+    titleSmall:    base.titleSmall?.copyWith(color: CrayonColors.textPrimary, fontSize: 18, fontFamilyFallback: _chineseFallback),
+    bodyLarge:     base.bodyLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 19, fontFamilyFallback: _chineseFallback),
+    bodyMedium:    base.bodyMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 17, fontFamilyFallback: _chineseFallback),
+    bodySmall:     base.bodySmall?.copyWith(color: CrayonColors.textSecondary, fontSize: 16, fontFamilyFallback: _chineseFallback),
+    labelLarge:    base.labelLarge?.copyWith(color: CrayonColors.textPrimary, fontSize: 18, fontFamilyFallback: _chineseFallback),
+    labelMedium:   base.labelMedium?.copyWith(color: CrayonColors.textPrimary, fontSize: 16, fontFamilyFallback: _chineseFallback),
+    labelSmall:    base.labelSmall?.copyWith(color: CrayonColors.textSecondary, fontSize: 15, fontFamilyFallback: _chineseFallback),
   );
 
   final colorScheme = ColorScheme.fromSeed(
@@ -164,8 +171,8 @@ ThemeData buildCrayonTheme() {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: CrayonColors.strokeMedium, width: 2),
       ),
-      labelStyle: GoogleFonts.caveat(color: CrayonColors.textSecondary, fontSize: 18),
-      hintStyle:  GoogleFonts.caveat(color: CrayonColors.textHint,      fontSize: 17),
+      labelStyle: GoogleFonts.caveat(color: CrayonColors.textSecondary, fontSize: 18).copyWith(fontFamilyFallback: _chineseFallback),
+      hintStyle:  GoogleFonts.caveat(color: CrayonColors.textHint,      fontSize: 17).copyWith(fontFamilyFallback: _chineseFallback),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
